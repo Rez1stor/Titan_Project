@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="frontend/frontend.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="Titan_Project.AppHost/Titan_Project.AppHost.csproj" />
+  <Project Path="Titan_Project.Server/Titan_Project.Server.csproj" />
+</Solution>
