@@ -6,6 +6,7 @@ builder.AddServiceDefaults();
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
+builder.Services.AddSingleton<Titan_Project.Server.Infrastructure.Catalog.BeerCatalogProvider>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

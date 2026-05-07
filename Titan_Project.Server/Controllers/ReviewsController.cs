@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Titan_Project.Server.Models.DTOs;
+using Titan_Project.Server.Contracts.Reviews;
+using Titan_Project.Server.Infrastructure.Data;
 
 namespace Titan_Project.Server.Controllers;
 
@@ -7,16 +8,10 @@ namespace Titan_Project.Server.Controllers;
 [Route("api/[controller]")]
 public class ReviewsController : ControllerBase
 {
-    private static readonly List<ReviewDto> _mockReviews = new()
-    {
-        new ReviewDto { Id = 1, ProductId = 1, Username = "BeerLover99", Rating = 5, Comment = "Classic taste, always good.", CreatedAt = DateTime.UtcNow.AddDays(-2) },
-        new ReviewDto { Id = 2, ProductId = 1, Username = "Ivan", Rating = 4, Comment = "A bit too heavy for my taste.", CreatedAt = DateTime.UtcNow.AddDays(-5) }
-    };
-
     [HttpGet("product/{productId}")]
-    public ActionResult<IEnumerable<ReviewDto>> GetReviewsForProduct(int productId)
+    public ActionResult<IEnumerable<ReviewDto>> GetReviewsForProduct(Guid productId)
     {
-        var reviews = _mockReviews.Where(r => r.ProductId == productId).ToList();
+        var reviews = SeedData.Reviews.Where(r => r.ProductId == productId).ToList();
         return Ok(reviews);
     }
 
@@ -32,7 +27,7 @@ public class ReviewsController : ControllerBase
         // Імітуємо збереження
         var newReview = new ReviewDto
         {
-            Id = _mockReviews.Max(r => r.Id) + 1,
+            Id = Guid.NewGuid(),
             ProductId = reviewDto.ProductId,
             Username = "CurrentUser", // Поки немає авторизації
             Rating = reviewDto.Rating,
@@ -40,9 +35,9 @@ public class ReviewsController : ControllerBase
             CreatedAt = DateTime.UtcNow
         };
 
-        _mockReviews.Add(newReview);
+        SeedData.Reviews.Add(newReview);
 
-        // Повертаємо створений об'єкт та статуc 201 Created
+        // Повертаємо створений об'єкт та статус 201 Created
         return CreatedAtAction(nameof(GetReviewsForProduct), new { productId = newReview.ProductId }, newReview);
     }
 }

@@ -1,0 +1,94 @@
+{
+  "families": [
+    {
+      "code": "Lager",
+      "description": "Clean, crisp, and cold-fermented beer styles.",
+      "styles": [
+        {
+          "code": "Pilsner",
+          "description": "Light, hop-forward lager with a dry finish."
+        },
+        {
+          "code": "Helles",
+          "description": "Soft, malty German pale lager."
+        },
+        {
+          "code": "Dunkel",
+          "description": "Dark malty lager with toast and caramel notes."
+        },
+        {
+          "code": "Bock",
+          "description": "Stronger malt-driven lager family."
+        }
+      ]
+    },
+    {
+      "code": "Ale",
+      "description": "Top-fermented beer styles with broad flavor range.",
+      "styles": [
+        {
+          "code": "IPA",
+          "description": "Hop-forward ale with pronounced bitterness and aroma."
+        },
+        {
+          "code": "PaleAle",
+          "description": "Balanced ale with moderate hop and malt character."
+        },
+        {
+          "code": "Stout",
+          "description": "Dark ale with roasted malt, cocoa, and coffee notes."
+        },
+        {
+          "code": "Porter",
+          "description": "Roasty dark ale between brown ale and stout."
+        },
+        {
+          "code": "Saison",
+          "description": "Dry, spicy farmhouse ale."
+        }
+      ]
+    },
+    {
+      "code": "Wheat",
+      "description": "Beer styles with a significant wheat malt share.",
+      "styles": [
+        {
+          "code": "Witbier",
+          "description": "Belgian wheat beer with citrus and spice."
+        },
+        {
+          "code": "Hefeweizen",
+          "description": "German wheat beer with banana and clove notes."
+        }
+      ]
+    },
+    {
+      "code": "Sour",
+      "description": "Acidic and fruit-driven styles with lively acidity.",
+      "styles": [
+        {
+          "code": "BerlinerWeisse",
+          "description": "Very light sour wheat beer."
+        },
+        {
+          "code": "Gose",
+          "description": "Salty, tart wheat beer with coriander."
+        },
+        {
+          "code": "Lambic",
+          "description": "Spontaneously fermented Belgian sour beer."
+        }
+      ]
+    },
+    {
+      "code": "Belgian",
+      "description": "Belgian yeast-driven and expressive beer styles.",
+      "styles": [
+        {
+          "code": "BelgianTripel",
+          "description": "Strong golden Belgian ale with spicy yeast character."
+        }
+      ]
+    }
+  ]
+}
