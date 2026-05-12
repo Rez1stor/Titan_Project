@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Hosting;
 
 namespace Titan_Project.Server.Infrastructure.Catalog;
 

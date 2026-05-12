@@ -20,18 +20,18 @@ public class FavoritesController : ControllerBase
     }
 
     [HttpPost("{productId}")]
-    public ActionResult AddFavorite(Guid productId, [FromHeader(Name = "X-User-Id")] string? userId)
+    public ActionResult AddFavorite(int productId, [FromHeader(Name = "X-User-Id")] string? userId)
     {
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-        var list = SeedData.Favorites.GetOrAdd(userId, _ => new List<Guid>());
+        var list = SeedData.Favorites.GetOrAdd(userId, _ => new List<int>());
         if (!list.Contains(productId)) list.Add(productId);
 
         return NoContent();
     }
 
     [HttpDelete("{productId}")]
-    public ActionResult RemoveFavorite(Guid productId, [FromHeader(Name = "X-User-Id")] string? userId)
+    public ActionResult RemoveFavorite(int productId, [FromHeader(Name = "X-User-Id")] string? userId)
     {
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
@@ -39,3 +39,4 @@ public class FavoritesController : ControllerBase
         return NoContent();
     }
 }
+

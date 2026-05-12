@@ -4,7 +4,7 @@ namespace Titan_Project.Server.Contracts.Recommendations;
 
 public class RecommendedProductDto
 {
-	public Guid Id { get; set; }
+	public int Id { get; set; }
 	public string Name { get; set; } = string.Empty;
 	public string CategoryName { get; set; } = string.Empty;
 	public double? StrengthAbv { get; set; }

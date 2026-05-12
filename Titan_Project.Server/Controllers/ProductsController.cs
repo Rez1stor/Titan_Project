@@ -5,7 +5,7 @@ using Titan_Project.Server.Infrastructure.Data;
 namespace Titan_Project.Server.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/products")]
 public class ProductsController : ControllerBase
 {
     [HttpGet]
@@ -15,7 +15,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public ActionResult<ProductDto> GetProductById(Guid id)
+    public ActionResult<ProductDto> GetProductById(int id)
     {
         var product = SeedData.Products.FirstOrDefault(p => p.Id == id);
 
@@ -26,4 +26,5 @@ public class ProductsController : ControllerBase
 
         return Ok(product);
     }
-}
+} 
+

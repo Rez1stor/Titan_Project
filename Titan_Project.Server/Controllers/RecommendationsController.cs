@@ -9,7 +9,7 @@ namespace Titan_Project.Server.Controllers;
 public class RecommendationsController : ControllerBase
 {
     [HttpGet("{productId}")]
-    public ActionResult<IEnumerable<ProductDto>> GetSimilar(Guid productId)
+    public ActionResult<IEnumerable<ProductDto>> GetSimilar(int productId)
     {
         var baseP = SeedData.Products.FirstOrDefault(p => p.Id == productId);
         if (baseP == null) return NotFound();
@@ -40,3 +40,4 @@ public class RecommendationsController : ControllerBase
         return Ok(SeedData.Products.OrderByDescending(p => p.AvgRating).Take(5));
     }
 }
+

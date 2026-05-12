@@ -34,3 +34,4 @@ public class BeerCatalogController : ControllerBase
         return style is null ? NotFound() : Ok(style);
     }
 }
+

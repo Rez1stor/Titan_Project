@@ -9,7 +9,7 @@ namespace Titan_Project.Server.Controllers;
 public class ReviewsController : ControllerBase
 {
     [HttpGet("product/{productId}")]
-    public ActionResult<IEnumerable<ReviewDto>> GetReviewsForProduct(Guid productId)
+    public ActionResult<IEnumerable<ReviewDto>> GetReviewsForProduct(int productId)
     {
         var reviews = SeedData.Reviews.Where(r => r.ProductId == productId).ToList();
         return Ok(reviews);
@@ -27,7 +27,7 @@ public class ReviewsController : ControllerBase
         // Імітуємо збереження
         var newReview = new ReviewDto
         {
-            Id = Guid.NewGuid(),
+            Id = SeedData.Reviews.Count + 1,
             ProductId = reviewDto.ProductId,
             Username = "CurrentUser", // Поки немає авторизації
             Rating = reviewDto.Rating,
@@ -41,3 +41,4 @@ public class ReviewsController : ControllerBase
         return CreatedAtAction(nameof(GetReviewsForProduct), new { productId = newReview.ProductId }, newReview);
     }
 }
+

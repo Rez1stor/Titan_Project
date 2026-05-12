@@ -6,9 +6,9 @@ namespace Titan_Project.Server.Infrastructure.Data;
 
 public static class SeedData
 {
-	public static readonly Guid P1 = Guid.Parse("11111111-1111-1111-1111-111111111111");
-		public static readonly Guid P2 = Guid.Parse("22222222-2222-2222-2222-222222222222");
-		public static readonly Guid P3 = Guid.Parse("33333333-3333-3333-3333-333333333333");
+	public static readonly int P1 = 1;
+		public static readonly int P2 = 2;
+		public static readonly int P3 = 3;
 
 		public static readonly List<ProductDto> Products = new()
 		{
@@ -19,10 +19,10 @@ public static class SeedData
 
 		public static readonly List<ReviewDto> Reviews = new()
 		{
-			new ReviewDto { Id = Guid.NewGuid(), ProductId = P1, Username = "BeerLover99", Rating = 5, Comment = "Classic taste.", CreatedAt = DateTime.UtcNow.AddDays(-2) },
-			new ReviewDto { Id = Guid.NewGuid(), ProductId = P1, Username = "Ivan", Rating = 4, Comment = "A bit heavy.", CreatedAt = DateTime.UtcNow.AddDays(-5) }
+			new ReviewDto { Id = 1, ProductId = P1, Username = "BeerLover99", Rating = 5, Comment = "Classic taste.", CreatedAt = DateTime.UtcNow.AddDays(-2) },
+			new ReviewDto { Id = 2, ProductId = P1, Username = "Ivan", Rating = 4, Comment = "A bit heavy.", CreatedAt = DateTime.UtcNow.AddDays(-5) }
 		};
 
 		// Simple in-memory favorites per user (keyed by user-id header string)
-		public static readonly ConcurrentDictionary<string, List<Guid>> Favorites = new();
+		public static readonly ConcurrentDictionary<string, List<int>> Favorites = new();
 }

@@ -3,6 +3,7 @@
     <Build />
     <Deploy />
   </Project>
+  <Project Path="TitanClassLibrary/TitanClassLibrary.csproj" Id="0c324cb6-e55e-4fa7-ae31-cd46d46fecee" />
   <Project Path="Titan_Project.AppHost/Titan_Project.AppHost.csproj" />
   <Project Path="Titan_Project.Server/Titan_Project.Server.csproj" />
 </Solution>
