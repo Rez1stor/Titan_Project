@@ -1,0 +1,146 @@
+{
+  "styles": [
+    {
+      "code": "Still",
+      "description": "Non-sparkling wines without carbonation, allowing the pure flavors of the fruit and winemaking process to shine through. These are the most traditional wines, available in red, white, and rosé varieties"
+    },
+    {
+      "code": "Sparkling",
+      "description": "Wines with carbonation and bubbles, ranging from lightly fizzy to fully champagne-style. Created through various methods including traditional bottle fermentation, tank fermentation, or carbonation. Perfect for celebrations and special occasions"
+    },
+    {
+      "code": "Fortified",
+      "description": "Wines enriched with additional distilled spirits like brandy, resulting in higher alcohol content (typically 15-20% ABV). Examples include Port, Sherry, and Madeira. Often enjoyed as aperitifs or dessert wines"
+    },
+    {
+      "code": "Dessert",
+      "description": "Sweet wines typically served after meals or with desserts. Can include fortified wines, late-harvest wines, or naturally sweet wines. Often have concentrated fruit flavors and lower acidity"
+    }
+  ],
+
+  "colors": [
+    {
+      "code": "Red",
+      "description": "Rich wines made from dark-colored grape varieties where the grape skins remain in contact with the juice during fermentation. This contact imparts deep colors, tannins, and bold flavors. Examples include Cabernet Sauvignon, Merlot, and Pinot Noir"
+    },
+    {
+      "code": "White",
+      "description": "Pale to golden wines made from green or yellow grapes with minimal skin contact during fermentation. These wines are typically lighter in body and brighter in acidity. Examples include Chardonnay, Sauvignon Blanc, and Riesling"
+    },
+    {
+      "code": "Rose",
+      "description": "Pink-colored wines made from red grapes with limited skin contact, creating their distinctive color and a balance between red and white wine characteristics. Usually dry to semi-dry with refreshing acidity"
+    },
+    {
+      "code": "Orange",
+      "description": "Amber or copper-colored wines made from white grape varieties with extended skin contact during fermentation. Also called skin-contact white wines, they have deeper colors and fuller body than traditional whites"
+    }
+  ],
+
+  "sweetness": [
+    {
+      "code": "Dry",
+      "description": "Wines with minimal residual sugar (less than 4g/L), offering little to no sweetness. The wine's natural acidity takes center stage, and the flavors are focused on fruit, earth, and tannins rather than sugar"
+    },
+    {
+      "code": "SemiDry",
+      "description": "Wines with slight residual sugar (4-12g/L) creating just a hint of sweetness that balances with acidity. These wines offer versatility for food pairing and are often excellent for those transitioning from sweet to dry wines"
+    },
+    {
+      "code": "SemiSweet",
+      "description": "Wines with noticeable sweetness (12-45g/L) providing a clear sweet taste while still maintaining some acidity for balance. Popular styles include Riesling and Moscato, appealing to those who prefer sweeter beverages"
+    },
+    {
+      "code": "Sweet",
+      "description": "Wines with high residual sugar content (over 45g/L) creating pronounced sweetness throughout. Often served as dessert wines or paired with sweet dishes. Examples include late-harvest wines and fortified sweet wines"
+    }
+  ],
+
+  "body": [
+    {
+      "code": "Light",
+      "description": "Wines with minimal alcohol content and low tannin levels, creating a delicate and refreshing mouthfeel. Light-bodied wines are typically crisp and easy-drinking, perfect as aperitifs or for casual enjoyment"
+    },
+    {
+      "code": "Medium",
+      "description": "Wines with balanced alcohol content (12-13.5% ABV) and moderate complexity. Medium-bodied wines offer enough structure and flavor intensity for food pairing while remaining approachable and well-rounded"
+    },
+    {
+      "code": "Full",
+      "description": "Wines with higher alcohol content (14%+ ABV) and rich, concentrated flavors creating a robust mouthfeel. Full-bodied wines offer complex flavor profiles and often feature prominent tannins, making them excellent for aging and elaborate food pairings"
+    }
+  ],
+
+  "tannins": [
+    {
+      "code": "Light",
+      "description": "Low tannin content providing a smooth, soft finish without drying the mouth. Often found in lighter red wines and white wines, allowing the fruit and acidity to be the dominant characteristics"
+    },
+    {
+      "code": "Moderate",
+      "description": "Balanced tannin levels that provide structure and grip without overwhelming the palate. These tannins frame the fruit flavors and acidity, making for wines with good aging potential and food-friendly characteristics"
+    },
+    {
+      "code": "High",
+      "description": "Pronounced tannins that create a drying sensation in the mouth, typical of bold red wines like Cabernet Sauvignon and Nebbiolo. High tannin wines often benefit from aging and pair well with rich, fatty foods"
+    }
+  ],
+
+  "acidity": [
+    {
+      "code": "Low",
+      "description": "Wines with minimal acidity creating a smooth, round mouthfeel. Low acidity wines are often riper in style and feel more luscious, though they may lack the crispness and freshness of higher acidity wines"
+    },
+    {
+      "code": "Medium",
+      "description": "Balanced acidity levels that provide freshness and brightness without being sharp or sour. Medium acidity is versatile for food pairing and creates wines that are both approachable and age-worthy"
+    },
+    {
+      "code": "High",
+      "description": "Pronounced acidity creating a crisp, zesty mouthfeel with a bright finish. High acidity wines feel refreshing and energetic, making them excellent aperitifs and ideal for pairing with acidic or rich foods"
+    }
+  ],
+
+  "aromas": [
+    {
+      "code": "Fruity",
+      "description": "Predominant fruit-driven aromas ranging from fresh berries and citrus to tropical fruits and stone fruits depending on grape variety and climate. These aromas form the foundation of wine's flavor profile and indicate ripe grapes"
+    },
+    {
+      "code": "Berry",
+      "description": "Specific aromas of dark and red berries such as blackberry, raspberry, blueberry, and strawberry. These aromas are common in red wines and contribute to their fruity character and approachability"
+    },
+    {
+      "code": "Citrus",
+      "description": "Bright, refreshing aromas of lemon, lime, orange, and grapefruit. Citrus notes are prevalent in white wines and add freshness, crispness, and acidity to the wine's profile"
+    },
+    {
+      "code": "Floral",
+      "description": "Delicate flower-like aromas such as rose, honeysuckle, lilac, or violet. Common in aromatic white wines like Gewürztraminer and Riesling, floral notes add elegance and complexity to the wine's bouquet"
+    },
+    {
+      "code": "Spicy",
+      "description": "Peppery, warming aromas of black pepper, white pepper, cinnamon, cloves, or other spices. Often derived from grape varieties like Syrah and Grenache or from oak aging, adding complexity and depth to the wine"
+    },
+    {
+      "code": "Herbal",
+      "description": "Green, herbaceous aromas reminiscent of grass, celery, bell pepper, or herbs like mint and basil. Often found in Sauvignon Blancs and Cabernet Francs, these aromas add freshness and can indicate unripe grapes or cooler climate wines"
+    },
+    {
+      "code": "Oak",
+      "description": "Woody aromas from aging in oak barrels, including toasted notes, cedar, and barrel-influenced characteristics. Oak aging adds complexity and can contribute vanilla, coconut, and smoky notes to the wine's profile"
+    },
+    {
+      "code": "Chocolate",
+      "description": "Rich, luxurious aromas of dark chocolate, cocoa, and chocolate powder. Often found in full-bodied red wines, chocolate notes add depth, sweetness, and sophistication to the wine's complex flavor profile"
+    },
+    {
+      "code": "Vanilla",
+      "description": "Sweet, creamy vanilla aromas from barrel aging in new oak. These aromas add richness and sweetness to wines, often complemented by caramel or butterscotch notes, creating a luxurious sensory experience"
+    },
+    {
+      "code": "Other",
+      "description": "Additional or miscellaneous aromas that don't fit into the standard categories. Can include unique or atypical scents that contribute to a wine's distinctive character and individuality"
+    }
+  ]
+}
