@@ -18,8 +18,8 @@ public class BeerProduct : AlcoholProduct
     { 
         get => _ibu;
         set {
-            if (Ibu < MinIbu || Ibu > MaxIbu)
-                throw new ArgumentOutOfRangeException(nameof(Ibu), Ibu, $"IBU must be between {MinIbu} and {MaxIbu}.");
+            if (value < MinIbu || value > MaxIbu)
+                throw new ArgumentOutOfRangeException(nameof(Ibu), value, $"IBU must be between {MinIbu} and {MaxIbu}.");
             _ibu = value; 
         }
     }
@@ -28,8 +28,8 @@ public class BeerProduct : AlcoholProduct
         get => _srm;
         set
         {
-            if (Srm < MinSrm || Srm > MaxSrm)
-                throw new ArgumentOutOfRangeException(nameof(Srm), Srm, $"SRM must be between {MinSrm} and {MaxSrm}.");
+            if (value < MinSrm || value > MaxSrm)
+                throw new ArgumentOutOfRangeException(nameof(Srm), value, $"SRM must be between {MinSrm} and {MaxSrm}.");
             _srm = value;
         }
     }

@@ -1,4 +1,8 @@
 <Solution>
+  <Project Path="Database-Titan/Database-Titan.sqlproj" Id="1d40c098-451c-45f4-a880-4fcfbd324890">
+    <Build />
+    <Deploy />
+  </Project>
   <Project Path="frontend/frontend.esproj">
     <Build />
     <Deploy />

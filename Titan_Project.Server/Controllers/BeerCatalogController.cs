@@ -27,6 +27,19 @@ public class BeerCatalogController : ControllerBase
         return family is null ? NotFound() : Ok(family);
     }
 
+    [HttpGet("colors")]
+    public ActionResult<IReadOnlyList<BeerColorEntry>> GetColors()
+    {
+        return Ok(catalogProvider.GetColors());
+    }
+
+    [HttpGet("colors/{code}")]
+    public ActionResult<BeerColorEntry> GetColor(string code)
+    {
+        var color = catalogProvider.GetColor(code);
+        return color is null ? NotFound() : Ok(color);
+    }
+
     [HttpGet("styles/{code}")]
     public ActionResult<BeerStyleEntry> GetStyle(string code)
     {
