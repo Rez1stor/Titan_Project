@@ -5,7 +5,7 @@ using Titan_Project.Server.Infrastructure.Data;
 namespace Titan_Project.Server.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/favorites")]
 public class FavoritesController : ControllerBase
 {
     [HttpGet]
