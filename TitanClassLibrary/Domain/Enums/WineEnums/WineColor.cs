@@ -5,5 +5,6 @@ public enum WineColor
     Red = 1,
     White = 2,
     Rose = 3,
+    Orange = 4,
     Other = 99
-}
+}//2
