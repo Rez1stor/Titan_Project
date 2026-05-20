@@ -11,7 +11,7 @@ public class User
     public string Email { get; set; } = null!;
     [Required]
     public string PasswordHash { get; set; } = null!;
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string? Country { get; set; }
     public virtual ICollection<AlcoholProduct> Favorites { get; set; } = new List<AlcoholProduct>();
     public decimal? TargetAbv { get; set; }

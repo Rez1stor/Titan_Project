@@ -1,6 +1,155 @@
-@Server_HostAddress = http://localhost:5542
+@host = http://localhost:5542
+@username = smoke_user
+@email = smoke@test.local
+@password = supersecret123
 
-GET {{Server_HostAddress}}/api/weatherforecast/
+### Public: products list
+GET {{host}}/api/products
 Accept: application/json
 
-###
+### Public: beer-catalog families
+GET {{host}}/api/beer-catalog/families
+Accept: application/json
+
+### Public: recommendations for-user (anon -> top-rated fallback)
+GET {{host}}/api/recommendations/for-user
+Accept: application/json
+
+### Auth: me before login (expect 401)
+GET {{host}}/api/auth/me
+Accept: application/json
+
+### Auth: favorites without cookie (expect 401)
+GET {{host}}/api/favorites
+Accept: application/json
+
+### Auth: register
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "email": "{{email}}",
+  "password": "{{password}}",
+  "country": "UA"
+}
+
+### Auth: me after register (expect 200)
+GET {{host}}/api/auth/me
+Accept: application/json
+
+### Auth: duplicate username (expect 409 UsernameTaken)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "email": "different@test.local",
+  "password": "{{password}}"
+}
+
+### Auth: duplicate email (expect 409 EmailTaken)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "another_user",
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Auth: register validation fail (short password, expect 400)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "shortpw_user",
+  "email": "shortpw@test.local",
+  "password": "1234"
+}
+
+### Favorites: add product 1
+POST {{host}}/api/favorites/1
+
+### Favorites: add product 3
+POST {{host}}/api/favorites/3
+
+### Favorites: list (expect products 1 and 3)
+GET {{host}}/api/favorites
+Accept: application/json
+
+### Recommendations: for-user (expect favorites)
+GET {{host}}/api/recommendations/for-user
+Accept: application/json
+
+### Recommendations: similar to product 1 (beer -> other beers)
+GET {{host}}/api/recommendations/1
+Accept: application/json
+
+### Recommendations: similar to non-existent (expect 404)
+GET {{host}}/api/recommendations/999
+Accept: application/json
+
+### Favorites: remove product 1
+DELETE {{host}}/api/favorites/1
+
+### Favorites: list after remove (expect only product 3)
+GET {{host}}/api/favorites
+Accept: application/json
+
+### Reviews: create on product 2 (expect 201, username = smoke_user)
+POST {{host}}/api/reviews
+Content-Type: application/json
+
+{
+  "productId": 2,
+  "rating": 5,
+  "comment": "Smoke test review"
+}
+
+### Reviews: validation fail (rating=10, expect 400)
+POST {{host}}/api/reviews
+Content-Type: application/json
+
+{
+  "productId": 2,
+  "rating": 10,
+  "comment": "Out of range"
+}
+
+### Reviews: for product 2 (expect the new review)
+GET {{host}}/api/reviews/product/2
+Accept: application/json
+
+### Auth: logout
+POST {{host}}/api/auth/logout
+
+### Auth: me after logout (expect 401)
+GET {{host}}/api/auth/me
+Accept: application/json
+
+### Auth: favorites after logout (expect 401)
+GET {{host}}/api/favorites
+Accept: application/json
+
+### Auth: login with wrong password (expect 401 InvalidCredentials)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "wrongpassword"
+}
+
+### Auth: login with correct password (expect 200)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### Favorites: list after re-login (expect product 3 still there)
+GET {{host}}/api/favorites
+Accept: application/json

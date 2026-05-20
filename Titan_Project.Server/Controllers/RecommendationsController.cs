@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Titan_Project.Server.Application.Abstractions;
 using Titan_Project.Server.Contracts.Products;
 using Titan_Project.Server.Infrastructure.Data;
 
@@ -6,9 +7,9 @@ namespace Titan_Project.Server.Controllers;
 
 [ApiController]
 [Route("api/recommendations")]
-public class RecommendationsController : ControllerBase
+public class RecommendationsController(ICurrentUserContext currentUser) : ControllerBase
 {
-    [HttpGet("{productId}")]
+    [HttpGet("{productId:int}")]
     public ActionResult<IEnumerable<ProductDto>> GetSimilar(int productId)
     {
         var baseP = SeedData.Products.FirstOrDefault(p => p.Id == productId);
@@ -23,21 +24,15 @@ public class RecommendationsController : ControllerBase
     }
 
     [HttpGet("for-user")]
-    public ActionResult<IEnumerable<ProductDto>> GetForUser([FromHeader(Name = "X-User-Id")] string? userId)
+    public ActionResult<IEnumerable<ProductDto>> GetForUser()
     {
-        if (string.IsNullOrEmpty(userId))
+        if (currentUser.IsAuthenticated &&
+            SeedData.Favorites.TryGetValue(currentUser.UserId!.Value.ToString(), out var favs) &&
+            favs.Count > 0)
         {
-            // anonymous fallback: return top-rated
-            return Ok(SeedData.Products.OrderByDescending(p => p.AvgRating).Take(5));
-        }
-
-        if (SeedData.Favorites.TryGetValue(userId, out var favs) && favs.Any())
-        {
-            var prods = SeedData.Products.Where(p => favs.Contains(p.Id)).ToList();
-            return Ok(prods);
+            return Ok(SeedData.Products.Where(p => favs.Contains(p.Id)).ToList());
         }
 
         return Ok(SeedData.Products.OrderByDescending(p => p.AvgRating).Take(5));
     }
 }
-
