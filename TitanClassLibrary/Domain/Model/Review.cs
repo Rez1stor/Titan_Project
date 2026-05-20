@@ -10,7 +10,7 @@ public class Review
     private const int MaxCommentLength = 1000;
 
     private int _rating;
-    private string _comment;
+    private string? _comment;
 
     [Key]
     public int Id { get; set; }

@@ -23,7 +23,9 @@ public abstract class AlcoholProduct
     [Key]
     public int ProductId { get; set; }
     [Required]
-    public string Name { get { return _name; }
+    public string Name 
+    { 
+        get => _name; 
         set
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -33,7 +35,9 @@ public abstract class AlcoholProduct
             _name = value.Trim();
         }
     }
-    public string Description { get { return _description; }
+    public string Description 
+    { 
+        get => _description; 
         set 
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -43,7 +47,9 @@ public abstract class AlcoholProduct
             _description = value.Trim();
         }
      }
-    public decimal Abv { get { return _abv; }
+    public decimal Abv
+    {
+        get => _abv; 
         set
         {
             if (value < MinAbv || value > MaxAbv)
@@ -51,7 +57,9 @@ public abstract class AlcoholProduct
             _abv = value;
         }
     }
-    public decimal Price { get { return _price; }
+    public decimal Price
+    { 
+        get => _price; 
         set
         {
             if (value < MinPrice)
@@ -59,7 +67,9 @@ public abstract class AlcoholProduct
             _price = value;
         }
     }
-    public string CountryOfOrigin { get { return _countryOfOrigin; } 
+    public string CountryOfOrigin 
+    { 
+        get => _countryOfOrigin;
         set
         {
             if (string.IsNullOrWhiteSpace(value))

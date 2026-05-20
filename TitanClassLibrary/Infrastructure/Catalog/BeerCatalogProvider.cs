@@ -19,6 +19,7 @@ public sealed class BeerCatalogProvider
     }
 
     public IReadOnlyList<BeerStyleFamilyEntry> GetFamilies() => catalog.Value.Families;
+    public IReadOnlyList<BeerColorEntry> GetColors() => catalog.Value.Colors;
 
     public BeerStyleFamilyEntry? GetFamily(string code) =>
         catalog.Value.Families.FirstOrDefault(f => string.Equals(f.Code, code, StringComparison.OrdinalIgnoreCase));
@@ -28,8 +29,12 @@ public sealed class BeerCatalogProvider
             .SelectMany(f => f.Styles)
             .FirstOrDefault(s => string.Equals(s.Code, code, StringComparison.OrdinalIgnoreCase));
 
+    public BeerColorEntry? GetColor(string code) =>
+        catalog.Value.Colors.FirstOrDefault(c => string.Equals(c.Code, code, StringComparison.OrdinalIgnoreCase));
     public IReadOnlyList<BeerStyleEntry> GetStylesByFamily(string familyCode) =>
         GetFamily(familyCode)?.Styles ?? [];
+    
+    
 
     private static BeerCatalog Load(string path)
     {
