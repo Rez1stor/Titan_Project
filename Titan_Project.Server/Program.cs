@@ -63,13 +63,23 @@ builder.Services.AddOpenApi(options =>
 builder.AddServiceDefaults();
 
 // Add services to the container.
-var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is not configured.");
-builder.Services.AddDbContext<AppDBContext>(options => options.UseNpgsql(defaultConnection));
+builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<Titan_Project.Server.Infrastructure.Catalog.BeerCatalogProvider>();
 
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 var app = builder.Build();
+app.UseCors();
 
 using (var scope = app.Services.CreateScope())
 {
