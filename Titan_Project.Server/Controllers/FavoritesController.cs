@@ -1,42 +1,44 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Titan_Project.Server.Application.Abstractions;
 using Titan_Project.Server.Contracts.Products;
 using Titan_Project.Server.Infrastructure.Data;
 
 namespace Titan_Project.Server.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-public class FavoritesController : ControllerBase
+[Route("api/favorites")]
+[Authorize]
+public class FavoritesController(ICurrentUserContext currentUser) : ControllerBase
 {
     [HttpGet]
-    public ActionResult<IEnumerable<ProductDto>> GetFavorites([FromHeader(Name = "X-User-Id")] string? userId)
+    public ActionResult<IEnumerable<ProductDto>> GetFavorites()
     {
-        if (string.IsNullOrEmpty(userId)) return Ok(new List<ProductDto>());
-
-        if (!SeedData.Favorites.TryGetValue(userId, out var favs) || favs.Count == 0) return Ok(new List<ProductDto>());
+        var key = currentUser.UserId!.Value.ToString();
+        if (!SeedData.Favorites.TryGetValue(key, out var favs) || favs.Count == 0)
+            return Ok(new List<ProductDto>());
 
         var items = SeedData.Products.Where(p => favs.Contains(p.Id)).ToList();
         return Ok(items);
     }
 
-    [HttpPost("{productId}")]
-    public ActionResult AddFavorite(int productId, [FromHeader(Name = "X-User-Id")] string? userId)
+    [HttpPost("{productId:int}")]
+    public ActionResult AddFavorite(int productId)
     {
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-        var list = SeedData.Favorites.GetOrAdd(userId, _ => new List<int>());
+        var key = currentUser.UserId!.Value.ToString();
+        var list = SeedData.Favorites.GetOrAdd(key, _ => new List<int>());
         if (!list.Contains(productId)) list.Add(productId);
 
         return NoContent();
     }
 
-    [HttpDelete("{productId}")]
-    public ActionResult RemoveFavorite(int productId, [FromHeader(Name = "X-User-Id")] string? userId)
+    [HttpDelete("{productId:int}")]
+    public ActionResult RemoveFavorite(int productId)
     {
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+        var key = currentUser.UserId!.Value.ToString();
+        if (SeedData.Favorites.TryGetValue(key, out var list))
+            list.Remove(productId);
 
-        if (SeedData.Favorites.TryGetValue(userId, out var list)) list.Remove(productId);
         return NoContent();
     }
 }
-
