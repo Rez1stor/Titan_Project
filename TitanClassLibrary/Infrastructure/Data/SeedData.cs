@@ -1,5 +1,6 @@
 using Titan_Project.Server.Contracts.Products;
 using Titan_Project.Server.Contracts.Reviews;
+using Titan_Project.Server.Contracts.Users;
 using System.Collections.Concurrent;
 
 namespace Titan_Project.Server.Infrastructure.Data;
@@ -25,4 +26,9 @@ public static class SeedData
 
 		// Simple in-memory favorites per user (keyed by user-id header string)
 		public static readonly ConcurrentDictionary<string, List<int>> Favorites = new();
+
+		// Simple in-memory user preferences keyed by user-id (int)
+		public static readonly ConcurrentDictionary<int, UserPreferencesDto> UserPreferences = new();
+
+		// reports temporarily removed (moved to DB or disabled)
 }

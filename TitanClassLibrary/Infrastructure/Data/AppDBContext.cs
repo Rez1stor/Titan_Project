@@ -9,6 +9,7 @@ namespace Titan_Project.Server.Infrastructure.Data
         public DbSet<Review> Reviews { get; set; }
         public DbSet<AlcoholProduct> AlcoholProducts { get; set; }
         public DbSet<BeerProduct> BeerProducts { get; set; }
+        public DbSet<WineProduct> WineProducts { get; set; }
 
 
         public AppDBContext(DbContextOptions<AppDBContext> options) : base(options)
@@ -23,6 +24,7 @@ namespace Titan_Project.Server.Infrastructure.Data
             // Map base and derived types to separate tables (TPT)
             modelBuilder.Entity<AlcoholProduct>().ToTable("AlcoholProducts");
             modelBuilder.Entity<BeerProduct>().ToTable("BeerProducts");
+            modelBuilder.Entity<WineProduct>().ToTable("WineProducts");
 
             // Налаштування базових властивостей AlcoholProduct
             modelBuilder.Entity<AlcoholProduct>(entity =>
@@ -32,6 +34,11 @@ namespace Titan_Project.Server.Infrastructure.Data
                 entity.Property(e => e.CountryOfOrigin).HasMaxLength(100);
                 entity.Property(e => e.Price).HasPrecision(18, 2);
                 entity.Property(e => e.Abv).HasPrecision(5, 2);
+                
+                // Налаштування нових полів зображень
+                entity.Property(e => e.ImageUrl).HasMaxLength(500);
+                entity.Property(e => e.ImageSourceUrl).HasMaxLength(1000);
+                entity.Property(e => e.ImageLocalPath).HasMaxLength(1000);
             });
 
             // Налаштування специфічних полів для пива
@@ -78,6 +85,7 @@ namespace Titan_Project.Server.Infrastructure.Data
             modelBuilder.Entity<Review>(entity =>
             {
                 entity.Property(e => e.Comment).HasMaxLength(1000);
+                entity.HasIndex(e => new { e.UserId, e.ProductId }).IsUnique();
 
                 // Зв'язок Відгук -> Користувач
                 entity.HasOne<User>()

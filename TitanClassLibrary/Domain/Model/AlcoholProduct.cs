@@ -13,7 +13,6 @@ public abstract class AlcoholProduct
     private const int MaxNameLength = 255;
     private const int MaxCountryOfOriginLength = 100;
 
-
     private string _name = string.Empty;
     private string _description = string.Empty;
     private string _countryOfOrigin = string.Empty;
@@ -22,6 +21,7 @@ public abstract class AlcoholProduct
 
     [Key]
     public int ProductId { get; set; }
+    
     [Required]
     public string Name 
     { 
@@ -35,6 +35,7 @@ public abstract class AlcoholProduct
             _name = value.Trim();
         }
     }
+    
     public string Description 
     { 
         get => _description; 
@@ -47,6 +48,7 @@ public abstract class AlcoholProduct
             _description = value.Trim();
         }
      }
+     
     public decimal Abv
     {
         get => _abv; 
@@ -57,6 +59,7 @@ public abstract class AlcoholProduct
             _abv = value;
         }
     }
+    
     public decimal Price
     { 
         get => _price; 
@@ -67,6 +70,7 @@ public abstract class AlcoholProduct
             _price = value;
         }
     }
+    
     public string CountryOfOrigin 
     { 
         get => _countryOfOrigin;
@@ -79,9 +83,14 @@ public abstract class AlcoholProduct
             _countryOfOrigin = value.Trim();
         }
     }
+
+    // Нові властивості для зберігання посилань та файлів
+    public string? ImageUrl { get; set; }
+    public string? ImageSourceUrl { get; set; }
+    public string? ImageLocalPath { get; set; }
+
     public abstract AlcoholCategory Category { get; }
     public virtual ICollection<User> Favorites { get; set; } = new List<User>();
-
 
     protected AlcoholProduct() { }
 
@@ -93,5 +102,4 @@ public abstract class AlcoholProduct
         Price = price;
         CountryOfOrigin = countryOfOrigin.Trim();
     }
-    
 }

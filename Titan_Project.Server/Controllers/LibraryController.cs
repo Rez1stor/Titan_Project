@@ -3,26 +3,25 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Titan_Project.Server.Application.Abstractions;
 using Titan_Project.Server.Contracts.Products;
+using Titan_Project.Server.Contracts.Users;
+using Titan_Project.Server.Domain.Model;
 using Titan_Project.Server.Infrastructure.Data;
 using Titan_Project.Server.Infrastructure.Images;
-using Titan_Project.Server.Domain.Model;
-
-namespace Titan_Project.Server.Controllers;
 
 [ApiController]
-[Route("api/favorites")]
+[Route("api/library")]
 [Authorize]
-public class FavoritesController(AppDBContext db, ICurrentUserContext currentUser, IProductImageStore imageStore) : ControllerBase
+public class LibraryController(AppDBContext db, ICurrentUserContext currentUser, IProductImageStore imageStore) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetFavorites()
+    public async Task<ActionResult> GetLibrary()
     {
         if (!currentUser.IsAuthenticated || currentUser.UserId is null)
             return Unauthorized();
 
         var userId = currentUser.UserId.Value;
         var user = await db.Users.Include(u => u.Favorites).FirstOrDefaultAsync(u => u.UserId == userId);
-        if (user == null) return Ok(new List<ProductDto>());
+        if (user == null) return NotFound();
 
         var favProducts = user.Favorites.ToList();
         var productIds = favProducts.Select(p => p.ProductId).ToList();
@@ -39,7 +38,7 @@ public class FavoritesController(AppDBContext db, ICurrentUserContext currentUse
             .Select(g => new { ProductId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.ProductId, x => x.Count);
 
-        var products = favProducts.Select(p => {
+        var favorites = favProducts.Select(p => {
             var beer = p as BeerProduct;
             var wine = p as WineProduct;
             avgRatings.TryGetValue(p.ProductId, out var avg);
@@ -72,48 +71,32 @@ public class FavoritesController(AppDBContext db, ICurrentUserContext currentUse
             };
         }).ToList();
 
-        return Ok(products);
+        var prefs = new UserPreferencesDto
+        {
+            TargetAbv = user.TargetAbv,
+            AbvTolerance = user.AbvTolerance,
+            MaxPrice = user.MaxPrice
+        };
+
+        return Ok(new { favorites, preferences = prefs });
     }
 
-    [HttpPost("{productId:int}")]
-    public async Task<ActionResult> AddFavorite(int productId)
+    [HttpPut("prefs")]
+    public async Task<ActionResult> SetPreferences([FromBody] UserPreferencesDto prefs)
     {
         if (!currentUser.IsAuthenticated || currentUser.UserId is null)
             return Unauthorized();
 
         var userId = currentUser.UserId.Value;
-        var user = await db.Users.Include(u => u.Favorites).FirstOrDefaultAsync(u => u.UserId == userId);
+        var user = await db.Users.FirstOrDefaultAsync(u => u.UserId == userId);
         if (user == null) return NotFound();
 
-        var product = await db.AlcoholProducts.FirstOrDefaultAsync(p => p.ProductId == productId);
-        if (product == null) return NotFound();
+        user.TargetAbv = prefs.TargetAbv;
+        user.AbvTolerance = prefs.AbvTolerance;
+        user.MaxPrice = prefs.MaxPrice;
+        user.PreferredTagsJson = prefs.PreferredTags != null ? System.Text.Json.JsonSerializer.Serialize(prefs.PreferredTags) : "[]";
 
-        if (!user.Favorites.Any(p => p.ProductId == productId))
-        {
-            user.Favorites.Add(product);
-            await db.SaveChangesAsync();
-        }
-
-        return NoContent();
-    }
-
-    [HttpDelete("{productId:int}")]
-    public async Task<ActionResult> RemoveFavorite(int productId)
-    {
-        if (!currentUser.IsAuthenticated || currentUser.UserId is null)
-            return Unauthorized();
-
-        var userId = currentUser.UserId.Value;
-        var user = await db.Users.Include(u => u.Favorites).FirstOrDefaultAsync(u => u.UserId == userId);
-        if (user == null) return NotFound();
-
-        var product = user.Favorites.FirstOrDefault(p => p.ProductId == productId);
-        if (product != null)
-        {
-            user.Favorites.Remove(product);
-            await db.SaveChangesAsync();
-        }
-
+        await db.SaveChangesAsync();
         return NoContent();
     }
 }
