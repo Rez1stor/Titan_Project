@@ -102,7 +102,7 @@ builder.Services.Configure<PasswordHasherOptions>(o => o.IterationCount = 600_00
 builder.Services.AddSingleton<BeerCatalogProvider>();
 builder.Services.AddSingleton<WineCatalogProvider>();
 builder.Services.AddSingleton<IPasswordHasher, IdentityPasswordHasher>();
-builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
+builder.Services.AddScoped<IUserRepository, InMemoryUserRepository>();
 builder.Services.AddScoped<ICurrentUserContext, HttpContextCurrentUser>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProductImageStore, DbProductImageStore>();
