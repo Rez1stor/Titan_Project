@@ -1,7 +1,48 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn } from 'lucide-react';
+import { useState } from 'react';
+import Input from '../components/Input';
+import Button from '../components/Button';
+import FormCard from '../components/FormCard';
+import Notification from '../components/Notification';
 
 export default function Login() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ Username: username, Password: password })
+      });
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null);
+        setError(payload?.error || payload?.message || 'Invalid credentials');
+        setLoading(false);
+        return;
+      }
+
+      // notify app that auth state changed so Navbar and other components refresh
+      try { window.dispatchEvent(new Event('auth-changed')); } catch {}
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      setError('Network error during sign in');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div style={{ 
       display: 'flex', 
@@ -10,93 +51,30 @@ export default function Login() {
       minHeight: '70vh',
       padding: '20px'
     }}>
-      <div style={{ 
-        backgroundColor: 'white', 
-        width: '100%', 
-        maxWidth: '450px', 
-        padding: '50px', 
-        borderRadius: '35px', 
-        boxShadow: '0 20px 50px rgba(93, 64, 55, 0.05)',
-        border: '1px solid #F3F4F6'
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h1 style={{ color: '#2D2424', fontSize: '2.5rem', fontWeight: '900', marginBottom: '10px' }}>
-            Witaj ponownie
-          </h1>
-          <p style={{ color: '#9CA3AF', fontSize: '1rem' }}>
-            Zaloguj się, aby zarządzać swoją kolekcją
-          </p>
-        </div>
+      <FormCard title="Welcome back" subtitle="Sign in to manage your collection">
 
-        <form style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ position: 'relative' }}>
-            <Mail size={20} color="#9CA3AF" style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)' }} />
-            <input 
-              type="email" 
-              placeholder="Twój adres email" 
-              style={{ 
-                width: '100%', 
-                padding: '15px 15px 15px 45px', 
-                borderRadius: '15px', 
-                border: '1px solid #E5E7EB', 
-                backgroundColor: '#FAF9F6',
-                fontSize: '1rem',
-                outline: 'none',
-                fontFamily: 'inherit'
-              }} 
-            />
-          </div>
+        {error ? (
+          <div style={{ marginBottom: '12px' }}><Notification type="error">{error}</Notification></div>
+        ) : null}
 
-          <div style={{ position: 'relative' }}>
-            <Lock size={20} color="#9CA3AF" style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)' }} />
-            <input 
-              type="password" 
-              placeholder="Hasło" 
-              style={{ 
-                width: '100%', 
-                padding: '15px 15px 15px 45px', 
-                borderRadius: '15px', 
-                border: '1px solid #E5E7EB', 
-                backgroundColor: '#FAF9F6',
-                fontSize: '1rem',
-                outline: 'none',
-                fontFamily: 'inherit'
-              }} 
-            />
-          </div>
+        <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <Input icon={<Mail size={20} color="#9CA3AF" />} value={username} onChange={(e) => setUsername(e.target.value)} type="text" placeholder="Username" />
+          <Input icon={<Lock size={20} color="#9CA3AF" />} value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" />
 
-          <button 
-            type="submit" 
-            style={{ 
-              marginTop: '10px',
-              backgroundColor: '#5D4037', 
-              color: 'white', 
-              padding: '16px', 
-              borderRadius: '15px', 
-              border: 'none', 
-              fontSize: '1.1rem', 
-              fontWeight: 'bold', 
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              boxShadow: '0 10px 20px rgba(93, 64, 55, 0.2)'
-            }}
-          >
-            <LogIn size={20} /> Zaloguj się
-          </button>
+          <Button type="submit" disabled={loading} style={{ marginTop: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <LogIn size={18} /> {loading ? 'Signing in…' : 'Sign In'}
+          </Button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '30px' }}>
+        <div style={{ textAlign: 'center', marginTop: '18px' }}>
           <p style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>
-            Nie masz konta? {' '}
+            Don't have an account? {' '}
             <Link to="/register" style={{ color: '#5D4037', fontWeight: 'bold', textDecoration: 'none' }}>
-              Zarejestruj się
+              Sign up
             </Link>
           </p>
         </div>
-      </div>
+      </FormCard>
     </div>
   );
 }
