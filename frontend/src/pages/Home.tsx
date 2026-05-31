@@ -1,133 +1,193 @@
-import { Link } from 'react-router-dom';
-import { Beer, Heart, Sparkles, Star } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronRight, Sparkles } from 'lucide-react';
+import LandingFeatureCard from '../components/LandingFeatureCard';
+import SelectField from '../components/alcohol/SelectField';
+import {
+  alcoholTypeOptions,
+  buildCatalogQuery,
+  priceBandOptions,
+  type CatalogCategory,
+  type PriceBand,
+} from '../utils/catalogFilters';
 
 export default function Home() {
+  const navigate = useNavigate();
+  // Default to 'All' so the homepage selector is inclusive and primary
+  const [category, setCategory] = useState<CatalogCategory>('All');
+  const [priceBand, setPriceBand] = useState<PriceBand>('Any');
+
+  const openCatalog = () => {
+    const query = buildCatalogQuery(category, priceBand);
+    navigate(query ? `/catalog?${query}` : '/catalog');
+  };
+
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-      
-      {/* HERO СЕКЦІЯ */}
-      <div style={{ 
-        textAlign: 'center', 
-        padding: '100px 20px', 
-        backgroundColor: 'white', 
-        borderRadius: '50px', 
-        boxShadow: '0 20px 60px rgba(93, 64, 55, 0.05)',
-        marginBottom: '60px',
-        border: '1px solid #F3F4F6'
-      }}>
-        <h1 style={{ 
-          fontSize: '4.5rem', 
-          color: '#2D2424', 
-          fontWeight: '900', 
-          lineHeight: '1.1',
-          marginBottom: '25px'
-        }}>
-          Twoja osobista <br /> 
-          <span style={{ color: '#5D4037' }}>piwniczka</span>
-        </h1>
-        <p style={{ 
-          fontSize: '1.3rem', 
-          color: '#6B7280', 
-          maxWidth: '600px', 
-          margin: '0 auto 40px auto',
-          lineHeight: '1.6'
-        }}>
-          Śledź swoje degustacje, oceniaj unikalne smaki i otrzymuj rekomendacje dopasowane do Twojego podniebienia.
+    <div style={pageStyle}>
+      <section style={heroStyle}>
+        <div style={eyebrowStyle}>
+          <Sparkles size={16} /> Start with type and value
+        </div>
+        <h1 style={titleStyle}>Choose an alcohol type and price band, then jump into the catalog.</h1>
+        <p style={descriptionStyle}>
+          The next screen opens with your selected parameters and lets you refine the results with category-specific controls like IBU, SRM, and wine sweetness.
         </p>
-        <Link to="/catalog" style={{ 
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '12px',
-          backgroundColor: '#5D4037', 
-          color: 'white', 
-          padding: '18px 45px', 
-          borderRadius: '20px', 
-          fontSize: '1.2rem', 
-          fontWeight: 'bold', 
-          textDecoration: 'none',
-          boxShadow: '0 10px 25px rgba(93, 64, 55, 0.2)',
-          transition: '0.3s'
-        }}>
-          Przejdź do katalogu <Beer size={24} />
-        </Link>
-      </div>
 
-      {/* ПЕРЕВАГИ (FEATURES) */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-        gap: '30px' 
-      }}>
-        
-        <div style={featureCardStyle}>
-          <div style={iconBoxStyle}><Star color="#5D4037" size={30} /></div>
-          <h3 style={featureTitleStyle}>Oceń smak</h3>
-          <p style={featureTextStyle}>Dodawaj recenzje i oceniaj piwa oraz wina, aby zapamiętać każdy detal degustacji.</p>
+        <div style={selectorGridStyle}>
+          <div style={selectorCardStyle}>
+            <div style={labelStyle}>Alcohol type</div>
+            <SelectField
+              value={category}
+              onChange={(value) => setCategory(value as CatalogCategory)}
+              options={[{ label: 'All', value: 'All' }, ...alcoholTypeOptions]}
+            />
+          </div>
+
+          <div style={selectorCardStyle}>
+            <div style={labelStyle}>Price band</div>
+            <SelectField
+              value={priceBand}
+              onChange={(value) => setPriceBand(value as PriceBand)}
+              options={priceBandOptions.map((band) => ({ label: band.label, value: band.value }))}
+            />
+          </div>
         </div>
 
-        <div style={featureCardStyle}>
-          <div style={iconBoxStyle}><Heart color="#5D4037" size={30} /></div>
-          <h3 style={featureTitleStyle}>Twoja kolekcja</h3>
-          <p style={featureTextStyle}>Zapisuj ulubione produkty na swojej osobistej liście, aby mieć do nich szybki dostęp.</p>
-        </div>
+        <button type="button" onClick={openCatalog} style={actionStyle}>
+          Open catalog <ChevronRight size={18} />
+        </button>
+      </section>
 
-        <div style={featureCardStyle}>
-          <div style={iconBoxStyle}><Sparkles color="#5D4037" size={30} /></div>
-          <h3 style={featureTitleStyle}>Rekomendacje</h3>
-          <p style={featureTextStyle}>Nasz system podpowie Ci, co warto spróbować dalej na podstawie Twoich polubień.</p>
-        </div>
+      <section style={infoGridStyle}>
+        <LandingFeatureCard
+          kicker="01"
+          title="Pick a direction"
+          text="Choose beer, wine, or another supported category, then start from a clean, focused catalog view."
+        />
+        <LandingFeatureCard
+          kicker="02"
+          title="Filter by value"
+          text="Price bands are based on the average price of the selected alcohol type, so the split stays relative and practical."
+        />
+        <LandingFeatureCard
+          kicker="03"
+          title="Refine in catalog"
+          text="Use advanced filters like IBU, SRM, sweetness, style, and color only when they apply to the selected category."
+        />
+      </section>
 
-      </div>
-
-      {/* ФУТЕР-ПЛАШКА */}
-      <div style={{ 
-        marginTop: '80px', 
-        textAlign: 'center', 
-        padding: '40px', 
-        backgroundColor: '#F5F5DC', 
-        borderRadius: '35px' 
-      }}>
-        <h2 style={{ color: '#5D4037', fontSize: '1.8rem', fontWeight: '800' }}>Gotowy na nową przygodę?</h2>
-        <p style={{ color: '#8D6E63', marginBottom: '25px' }}>Dołącz do społeczności koneserów już dziś.</p>
-        <Link to="/login" style={{ color: '#5D4037', fontWeight: 'bold', textDecoration: 'underline' }}>
-          Zaloguj się lub utwórz konto
-        </Link>
-      </div>
+      <section style={quoteStyle}>
+        <p style={quoteTextStyle}>
+          “A good selector should feel calm, centered, and specific enough to help without overwhelming the user.”
+        </p>
+      </section>
 
     </div>
   );
 }
 
-// Стилі для карток переваг
-const featureCardStyle = {
-  backgroundColor: 'white',
-  padding: '40px',
-  borderRadius: '35px',
-  border: '1px solid #F3F4F6',
-  boxShadow: '0 10px 30px rgba(0,0,0,0.02)',
-  textAlign: 'center' as const
-};
-
-const iconBoxStyle = {
-  backgroundColor: '#FAF9F6',
-  width: '70px',
-  height: '70px',
-  borderRadius: '20px',
+const pageStyle: React.CSSProperties = {
+  maxWidth: '1180px',
+  margin: '0 auto',
   display: 'flex',
+  flexDirection: 'column',
+  gap: '20px',
+};
+
+const heroStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
-  justifyContent: 'center',
-  margin: '0 auto 25px auto'
+  textAlign: 'center',
+  padding: '16px 0 8px',
 };
 
-const featureTitleStyle = {
-  fontSize: '1.5rem',
+const eyebrowStyle: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '8px',
+  padding: '8px 14px',
+  borderRadius: '999px',
+  background: '#2D2424',
+  color: '#FFF7ED',
+  fontSize: '0.85rem',
+  fontWeight: 800,
+  marginBottom: '18px',
+};
+
+const titleStyle: React.CSSProperties = {
+  fontSize: 'clamp(1.95rem, 4.4vw, 4rem)',
+  lineHeight: 1.02,
+  margin: 0,
   color: '#2D2424',
-  fontWeight: '800',
-  marginBottom: '15px'
+  maxWidth: '16ch',
 };
 
-const featureTextStyle = {
+const descriptionStyle: React.CSSProperties = {
+  fontSize: '0.98rem',
+  lineHeight: 1.65,
   color: '#6B7280',
-  lineHeight: '1.6',
-  fontSize: '1rem'
+  maxWidth: '64ch',
+  marginTop: '18px',
 };
+
+const selectorGridStyle: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  gap: '16px',
+  marginTop: '28px',
+  width: '100%',
+  maxWidth: '780px',
+};
+
+const selectorCardStyle: React.CSSProperties = {
+  background: '#FFFFFF',
+  border: '1px solid #EFE2D0',
+  borderRadius: '24px',
+  padding: '18px',
+};
+
+const labelStyle: React.CSSProperties = {
+  color: '#5D4037',
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  fontSize: '0.74rem',
+  fontWeight: 900,
+  marginBottom: '10px',
+};
+
+const actionStyle: React.CSSProperties = {
+  marginTop: '22px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '10px',
+  border: 'none',
+  borderRadius: '18px',
+  background: '#5D4037',
+  color: '#FFFFFF',
+  padding: '14px 20px',
+  fontWeight: 900,
+  cursor: 'pointer',
+};
+
+const infoGridStyle: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+  gap: '16px',
+};
+
+const quoteStyle: React.CSSProperties = {
+  background: 'linear-gradient(135deg, #3A2A26 0%, #231816 100%)',
+  borderRadius: '28px',
+  padding: '30px 36px',
+  textAlign: 'center',
+};
+
+const quoteTextStyle: React.CSSProperties = {
+  margin: 0,
+  color: '#FFF7ED',
+  fontSize: '1.15rem',
+  lineHeight: 1.7,
+  fontWeight: 600,
+};
+
