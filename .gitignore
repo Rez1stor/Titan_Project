@@ -363,3 +363,14 @@ MigrationBackup/
 FodyWeavers.xsd
 
 .idea
+
+# Local build validation output
+_build_validation*/
+
+# Generated seed output
+seed-output/
+
+# Local dev dumps and data exports
+project_dump.txt
+*.csv
+quokka-*.tgz
