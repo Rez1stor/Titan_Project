@@ -10,7 +10,7 @@ public sealed class InMemoryUserRepository : IUserRepository
     private readonly ConcurrentDictionary<int, User> _byId = new();
     private readonly ConcurrentDictionary<string, int> _byUsername = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, int> _byEmail = new(StringComparer.OrdinalIgnoreCase);
-    private int _nextId;
+    private int _nextId = 1000;
 
     public Task<User?> FindByIdAsync(int userId, CancellationToken ct)
     {

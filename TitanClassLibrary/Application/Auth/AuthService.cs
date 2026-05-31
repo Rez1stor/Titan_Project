@@ -22,6 +22,7 @@ public sealed class AuthService(
             Email = request.Email,
             PasswordHash = hasher.Hash(request.Password),
             Country = request.Country,
+            Role = Titan_Project.Server.Application.Security.Roles.User,
         };
 
         try
@@ -65,6 +66,7 @@ public sealed class AuthService(
             Username = user.Username,
             Email = user.Email,
             Country = user.Country,
+            Role = user.Role,
         };
     }
 }

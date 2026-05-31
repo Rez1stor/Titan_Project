@@ -18,5 +18,6 @@ public class User
     public decimal? AbvTolerance { get; set; }
     public decimal? MaxPrice { get; set; }
     public string PreferredTagsJson { get; set; } = "[]";
+    public string Role { get; set; } = Titan_Project.Server.Application.Security.Roles.User;
 
 }

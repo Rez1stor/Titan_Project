@@ -63,6 +63,7 @@ public class AuthController(IAuthService auth) : ControllerBase
             new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role ?? Titan_Project.Server.Application.Security.Roles.User),
         };
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
@@ -75,5 +76,6 @@ public class AuthController(IAuthService auth) : ControllerBase
         Username = user.Username,
         Email = user.Email,
         Country = user.Country,
+        Role = user.Role,
     };
 }
