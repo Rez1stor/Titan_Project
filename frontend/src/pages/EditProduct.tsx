@@ -1,82 +1,42 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import ProductForm from '../components/ProductForm';
+import ProductFormComposition from '../compositions/ProductFormComposition';
+import useAdminGuard from '../hooks/useAdminGuard';
+import type { ProductFormDto } from '../types';
+import { apiRoutes } from '../api/routes';
+import { apiFetch } from '../utils/api';
+import { uploadProductImage } from '../utils/productImages';
 
 export default function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = React.useState(true);
-  const [initial, setInitial] = React.useState<any>(null);
+  const [initial, setInitial] = React.useState<ProductFormDto | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
 
-  const pageHeaderStyle = {
-    textAlign: 'center' as const,
-    marginBottom: '24px',
-    padding: '12px 0 6px',
-  };
-
-  const pageTitleStyle = {
-    margin: 0,
-    fontSize: 'clamp(2rem, 3vw, 2.6rem)',
-    lineHeight: 1.15,
-    fontWeight: 900,
-    letterSpacing: '-0.04em',
-    color: '#2D2424',
-  };
-
-  const pageSubtitleStyle = {
-    margin: '10px auto 0',
-    maxWidth: '58ch',
-    color: '#6B7280',
-    fontSize: '1rem',
-    lineHeight: 1.6,
-  };
+  useAdminGuard();
 
   React.useEffect(() => {
     if (!id) return;
-    fetch(`/api/products/${id}`).then((r) => r.json()).then((d) => setInitial(d)).catch(() => setInitial(null)).finally(() => setLoading(false));
+    apiFetch<ProductFormDto>(apiRoutes.products.byId(id), { credentials: 'omit' })
+      .then((data) => setInitial(data))
+      .catch(() => setInitial(null))
+      .finally(() => setLoading(false));
   }, [id]);
 
-  React.useEffect(() => {
-    let active = true;
-    fetch('/api/auth/me', { credentials: 'include' })
-      .then((r) => {
-        if (!active) return null;
-        if (!r.ok) return null;
-        return r.json();
-      })
-      .then((u) => {
-        if (!active) return;
-        const role = u?.role ?? null;
-        if (!role || !(role === 'Admin' || role === 'Moderator')) {
-          alert('Access denied: administrators or moderators only');
-          navigate('/login');
-        }
-      })
-      .catch(() => {
-        if (active) {
-          alert('Access denied: administrators or moderators only');
-          navigate('/login');
-        }
-      });
-
-    return () => { active = false; };
-  }, [navigate]);
-
-  const handleSave = async (payload: any) => {
+  const handleSave = async (payload: ProductFormDto) => {
     if (!id) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/admin/products/${id}`, {
+      const { imageFile, ...productPayload } = payload;
+      await apiFetch(apiRoutes.admin.productById(id), {
         method: 'PUT',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(productPayload),
       });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error(err?.message || 'Failed to save product');
+      if (imageFile) {
+        await uploadProductImage(id, productPayload.name ?? '', imageFile);
       }
 
       navigate(`/product/${id}`);
@@ -93,11 +53,11 @@ export default function EditProduct() {
 
   return (
     <div>
-      <div style={pageHeaderStyle}>
-        <h1 style={pageTitleStyle}>Edit product</h1>
-        <p style={pageSubtitleStyle}>Update the existing product details using the same form as creation.</p>
+      <div className="text-center mb-6 pt-3 pb-1.5">
+        <h1 className="m-0 text-[clamp(2rem,3vw,2.6rem)] leading-[1.15] font-black tracking-[-0.04em] text-text-main">Edit product</h1>
+        <p className="mt-2.5 mx-auto mb-0 max-w-[58ch] text-gray-500 text-base leading-[1.6]">Update the existing product details using the same form as creation.</p>
       </div>
-      <ProductForm initial={initial} onSubmit={handleSave} submitting={submitting} />
+      <ProductFormComposition initial={initial} onSubmit={handleSave} submitting={submitting} />
     </div>
   );
 }

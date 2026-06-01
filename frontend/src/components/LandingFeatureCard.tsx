@@ -6,43 +6,12 @@ type LandingFeatureCardProps = {
 
 export default function LandingFeatureCard({ kicker, title, text }: LandingFeatureCardProps) {
   return (
-    <article style={cardStyle}>
-      <div style={kickerStyle}>{kicker}</div>
-      <h2 style={titleStyle}>{title}</h2>
-      <p style={textStyle}>{text}</p>
+    <article className="bg-bg-card border border-[#EFE2D0] rounded-3xl p-5 shadow-[0_12px_28px_rgba(45,36,36,0.04)]">
+      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-text-main text-orange-50 font-black mb-3">
+        {kicker}
+      </div>
+      <h2 className="m-0 mb-2 text-text-main text-[1.15rem] font-bold">{title}</h2>
+      <p className="m-0 text-text-muted leading-relaxed">{text}</p>
     </article>
   );
 }
-
-const cardStyle: React.CSSProperties = {
-  background: '#FFFFFF',
-  border: '1px solid #EFE2D0',
-  borderRadius: '24px',
-  padding: '22px',
-  boxShadow: '0 12px 28px rgba(45, 36, 36, 0.04)',
-};
-
-const kickerStyle: React.CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '42px',
-  height: '42px',
-  borderRadius: '999px',
-  background: '#2D2424',
-  color: '#FFF7ED',
-  fontWeight: 900,
-  marginBottom: '12px',
-};
-
-const titleStyle: React.CSSProperties = {
-  margin: '0 0 8px',
-  color: '#2D2424',
-  fontSize: '1.15rem',
-};
-
-const textStyle: React.CSSProperties = {
-  margin: 0,
-  color: '#6B7280',
-  lineHeight: 1.6,
-};

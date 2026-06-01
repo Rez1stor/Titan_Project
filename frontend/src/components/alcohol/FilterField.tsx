@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 export function FilterField({
   label,
@@ -10,42 +10,12 @@ export function FilterField({
   children: ReactNode;
 }) {
   return (
-    <div style={fieldStyle}>
-      <div style={headerStyle}>
-        <div style={labelStyle}>{label}</div>
-        {helperText ? <div style={helperStyle}>{helperText}</div> : null}
+    <div className="bg-[#FAF8F5] border border-[#EFE7DB] rounded-[20px] p-[14px_16px_16px]">
+      <div className="flex justify-between items-start gap-3 mb-3">
+        <div className="text-text-main text-[1rem] font-black uppercase tracking-[0.05em]">{label}</div>
+        {helperText ? <div className="text-[#8B7D73] text-[0.8rem] leading-[1.4] text-right">{helperText}</div> : null}
       </div>
       {children}
     </div>
   );
 }
-
-const fieldStyle: CSSProperties = {
-  background: '#FAF8F5',
-  border: '1px solid #EFE7DB',
-  borderRadius: '20px',
-  padding: '14px 16px 16px',
-};
-
-const headerStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  gap: '12px',
-  alignItems: 'flex-start',
-  marginBottom: '12px',
-};
-
-const labelStyle: CSSProperties = {
-  color: '#2D2424',
-  fontSize: '1rem',
-  fontWeight: 900,
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-};
-
-const helperStyle: CSSProperties = {
-  color: '#8B7D73',
-  fontSize: '0.8rem',
-  lineHeight: 1.4,
-  textAlign: 'right',
-};

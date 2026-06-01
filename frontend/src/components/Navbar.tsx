@@ -1,26 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
-type AuthUserDto = {
-  userId: number;
-  username: string;
-  email: string;
-  country?: string | null;
-  role?: string | null;
-};
-
-const avatarOptions = ['🍺', '🍷', '🥂', '🍾', '🍸', '🫗', '🌿', '⭐'];
-
-function pickAvatar(username: string) {
-  const normalized = username.trim().toLowerCase();
-  let hash = 0;
-
-  for (const character of normalized) {
-    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-  }
-
-  return avatarOptions[hash % avatarOptions.length];
-}
+import type { AuthUserDto } from '../types';
+import { isAdminRole } from '../types';
+import { AUTH_CHANGED_EVENT, apiRoutes } from '../api/routes';
+import { pickAvatar } from '../utils/avatar';
+import { apiFetch } from '../utils/api';
 
 export default function Navbar() {
   const [user, setUser] = useState<AuthUserDto | null>(null);
@@ -29,14 +13,10 @@ export default function Navbar() {
     let active = true;
 
     const fetchMe = () => {
-      fetch('/api/auth/me', { credentials: 'include' })
-        .then(async (response) => {
-          if (!active || !response.ok) return null;
-          return response.json();
-        })
+      apiFetch<AuthUserDto>(apiRoutes.auth.me)
         .then((user) => {
-          if (!active || !user) return;
-          setUser(user as AuthUserDto);
+          if (!active) return;
+          setUser(user);
         })
         .catch(() => {
           if (active) setUser(null);
@@ -50,11 +30,11 @@ export default function Navbar() {
       fetchMe();
     };
 
-    window.addEventListener('auth-changed', onAuthChanged);
+    window.addEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
 
     return () => {
       active = false;
-      window.removeEventListener('auth-changed', onAuthChanged);
+      window.removeEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
     };
   }, []);
 
@@ -63,7 +43,7 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const handleAddProduct = () => {
-    if (!(user?.role === 'Admin' || user?.role === 'Moderator')) {
+    if (!isAdminRole(user?.role)) {
       alert('Only administrators can add products.');
       return;
     }
@@ -72,101 +52,44 @@ export default function Navbar() {
   };
 
   return (
-    <nav style={{ 
-      padding: '1.2rem 2.5rem', 
-      background: '#FFFFFF', 
-      borderBottom: '1px solid #E5E7EB',
-      display: 'flex', 
-      alignItems: 'center',
-      justifyContent: 'space-between' 
-    }}>
+    <nav className="px-10 py-5 bg-bg-card border-b border-border-color flex items-center justify-between">
       
-      {  }
-      <Link to="/" style={{ 
-        fontSize: '1.6rem', 
-        fontWeight: '900', 
-        color: '#5D4037', 
-        textDecoration: 'none', 
-        letterSpacing: '-1.5px' 
-      }}>
-      <span style={{ color: '#A0522D' }}>TITAN</span>
+      {/* Brand logo */}
+      <Link to="/" className="text-2xl font-black text-brand-color tracking-[-1.5px]">
+        <span className="text-[#A0522D]">TITAN</span>
       </Link>
       
-      {  }
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: '35px'
-      }}>
-        <Link to="/catalog" style={{ color: '#5D4037', textDecoration: 'none', fontWeight: '600', fontSize: '0.95rem' }}>
+      {/* Nav Links */}
+      <div className="flex items-center gap-9">
+        <Link to="/catalog" className="text-brand-color font-semibold text-[0.95rem] hover:text-brand-hover transition-colors">
           Catalog
         </Link>
-        <Link to="/favorites" style={{ color: '#5D4037', textDecoration: 'none', fontWeight: '600', fontSize: '0.95rem' }}>
+        <Link to="/favorites" className="text-brand-color font-semibold text-[0.95rem] hover:text-brand-hover transition-colors">
           Favorites
         </Link>
-        <Link to="/recommendations" style={{ color: '#5D4037', textDecoration: 'none', fontWeight: '600', fontSize: '0.95rem' }}>
+        <Link to="/recommendations" className="text-brand-color font-semibold text-[0.95rem] hover:text-brand-hover transition-colors">
           For You
         </Link>
 
-        {user && (user.role === 'Admin' || user.role === 'Moderator') ? (
+        {user && isAdminRole(user.role) && (
           <button
             type="button"
             onClick={handleAddProduct}
-            style={{
-              background: '#2D2424',
-              color: '#FFF7ED',
-              padding: '11px 18px',
-              borderRadius: '14px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 800,
-              fontSize: '0.9rem',
-            }}
+            className="bg-text-main text-orange-50 px-4.5 py-2.5 rounded-xl font-extrabold text-sm cursor-pointer hover:bg-black transition-colors"
           >
             Add Product
           </button>
-        ) : null}
+        )}
 
         {user ? (
-          <Link to="/profile" style={{
-            marginLeft: '10px',
-            background: '#5D4037',
-            color: 'white',
-            padding: '8px 14px 8px 10px',
-            borderRadius: '999px',
-            textDecoration: 'none',
-            fontWeight: 'bold',
-            fontSize: '0.9rem',
-            boxShadow: '0 4px 12px rgba(93, 64, 55, 0.15)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '10px'
-          }}>
-            <span style={{
-              width: '30px',
-              height: '30px',
-              borderRadius: '999px',
-              background: 'rgba(255,255,255,0.16)',
-              display: 'grid',
-              placeItems: 'center',
-              fontSize: '1rem'
-            }} aria-hidden="true">
+          <Link to="/profile" className="ml-2.5 bg-brand-color text-white pl-2.5 pr-3.5 py-2 rounded-full font-bold text-sm shadow-[0_4px_12px_rgba(93,64,55,0.15)] inline-flex items-center gap-2.5 hover:bg-brand-hover transition-colors">
+            <span className="w-[30px] h-[30px] rounded-full bg-white/16 grid place-items-center text-base" aria-hidden="true">
               {avatar}
             </span>
             My Profile
           </Link>
         ) : (
-          <Link to="/login" style={{
-            marginLeft: '10px',
-            background: '#5D4037',
-            color: 'white',
-            padding: '11px 26px',
-            borderRadius: '14px',
-            textDecoration: 'none',
-            fontWeight: 'bold',
-            fontSize: '0.9rem',
-            boxShadow: '0 4px 12px rgba(93, 64, 55, 0.15)'
-          }}>
+          <Link to="/login" className="ml-2.5 bg-brand-color text-white px-6.5 py-2.5 rounded-xl font-bold text-sm shadow-[0_4px_12px_rgba(93,64,55,0.15)] hover:bg-brand-hover transition-colors">
             Sign In
           </Link>
         )}

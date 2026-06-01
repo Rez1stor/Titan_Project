@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Titan_Project.Server.Application.Abstractions;
 using Titan_Project.Server.Application.Auth;
+using Titan_Project.Server.Application.Products;
 using Titan_Project.Server.Infrastructure.Auth;
 using Titan_Project.Server.Infrastructure.Catalog;
 using Titan_Project.Server.Infrastructure.Images;
@@ -53,16 +54,14 @@ builder.Services.AddOpenApi(options =>
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
 
-builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
-builder.Services.AddSingleton<Titan_Project.Server.Infrastructure.Catalog.BeerCatalogProvider>();
-builder.Services.AddSingleton<Titan_Project.Server.Infrastructure.Catalog.WineCatalogProvider>();
+builder.Services.AddSingleton<BeerCatalogProvider>();
+builder.Services.AddSingleton<WineCatalogProvider>();
 
 builder.Services.AddDbContext<AppDBContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is not configured.")));
 
-builder.Services.AddOpenApi();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -99,12 +98,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 builder.Services.Configure<PasswordHasherOptions>(o => o.IterationCount = 600_000);
 
-builder.Services.AddSingleton<BeerCatalogProvider>();
-builder.Services.AddSingleton<WineCatalogProvider>();
 builder.Services.AddSingleton<IPasswordHasher, IdentityPasswordHasher>();
-builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
+builder.Services.AddScoped<IUserRepository, DbUserRepository>();
 builder.Services.AddScoped<ICurrentUserContext, HttpContextCurrentUser>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProductQueryService, ProductQueryService>();
 builder.Services.AddScoped<IProductImageStore, DbProductImageStore>();
 builder.Services.AddHttpClient<IAlcoholSeedService, OpenFoodFactsAlcoholSeedService>(client =>
 {
@@ -165,7 +163,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Seed an in-memory admin user for initial management (only when using InMemoryUserRepository)
+// Seed admin user for initial management
 using (var scope = app.Services.CreateScope())
 {
     var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();

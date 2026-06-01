@@ -4,7 +4,7 @@ import { Info } from 'lucide-react';
 export default function TooltipIcon({ label, children }: { label: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+    <span className="relative inline-flex items-center group">
       <button
         type="button"
         aria-label={label}
@@ -12,52 +12,20 @@ export default function TooltipIcon({ label, children }: { label: string; childr
         onMouseLeave={() => setOpen(false)}
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
-        style={{
-          width: '18px',
-          height: '18px',
-          borderRadius: '999px',
-          border: '1px solid #E5E7EB',
-          background: '#F9FAFB',
-          color: '#9CA3AF',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 0,
-          cursor: 'help',
-          boxShadow: '0 1px 2px rgba(45, 36, 36, 0.06)'
-        }}
+        className="w-[18px] h-[18px] rounded-full border border-gray-200 bg-gray-50 text-gray-400 inline-flex items-center justify-center p-0 cursor-help shadow-sm hover:bg-gray-100 hover:text-brand-color transition-colors"
       >
         <Info size={11} />
       </button>
 
-      {open ? (
+      {open && (
         <div
           role="tooltip"
-          style={{
-            position: 'absolute',
-            left: '50%',
-            bottom: 'calc(100% + 10px)',
-            transform: 'translateX(-50%)',
-            width: '240px',
-            background: 'linear-gradient(180deg, #2D2424 0%, #3B2F2A 100%)',
-            color: '#FFF7ED',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            borderTop: '3px solid #A0522D',
-            borderRadius: '16px',
-            padding: '12px 14px',
-            boxShadow: '0 18px 40px rgba(45, 36, 36, 0.18)',
-            zIndex: 20,
-            fontSize: '0.78rem',
-            lineHeight: 1.5,
-            textTransform: 'none',
-            letterSpacing: '0',
-            whiteSpace: 'normal',
-          }}
+          className="absolute left-1/2 bottom-[calc(100%+10px)] -translate-x-1/2 w-[240px] bg-gradient-to-b from-[#2D2424] to-[#3B2F2A] text-orange-50 border border-white/10 border-t-[3px] border-t-[#A0522D] rounded-2xl px-3.5 py-3 shadow-[0_18px_40px_rgba(45,36,36,0.18)] z-20 text-[0.78rem] leading-relaxed whitespace-normal animate-in fade-in zoom-in-95 duration-150"
         >
-          <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', color: '#F5D6B4', marginBottom: '6px' }}>{label}</div>
+          <div className="text-[0.68rem] font-bold tracking-widest text-[#F5D6B4] mb-1.5 uppercase">{label}</div>
           <div>{children}</div>
         </div>
-      ) : null}
+      )}
     </span>
   );
 }

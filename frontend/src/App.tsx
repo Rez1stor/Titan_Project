@@ -11,16 +11,18 @@ import Recommendations from './pages/Recommendations';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import AlcoholFinderPage from './pages/AlcoholFinderPage';
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-stone-50 text-stone-900">
+      <div className="min-h-screen bg-bg-main text-text-main flex flex-col font-inter">
         <Navbar />
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-8 flex-1 max-w-[1200px]">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/catalog" element={<Catalog />} />
+            <Route path="/finder" element={<AlcoholFinderPage />} />
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/product/create" element={<CreateProduct />} />
             <Route path="/product/:id/edit" element={<EditProduct />} />

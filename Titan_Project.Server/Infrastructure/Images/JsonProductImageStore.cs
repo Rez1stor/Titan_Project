@@ -14,11 +14,21 @@ public sealed class DbProductImageStore : IProductImageStore
 
     public string? GetPublicUrl(int productId)
     {
-        return db.AlcoholProducts
+        var item = db.AlcoholProducts
             .AsNoTracking()
             .Where(product => product.ProductId == productId)
-            .Select(product => product.ImageUrl)
+            .Select(product => new { product.ImageUrl, product.ImageLocalPath })
             .FirstOrDefault();
+
+        if (item == null) return null;
+
+        if (!string.IsNullOrWhiteSpace(item.ImageLocalPath))
+        {
+            // Use the actual file name from the local path so URLs match stored files
+            return $"/product-images/{Path.GetFileName(item.ImageLocalPath)}";
+        }
+
+        return item.ImageUrl;
     }
 
     public string? GetSourceUrl(int productId)

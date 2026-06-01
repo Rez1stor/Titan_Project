@@ -1,17 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Titan_Project.Server.Application.Abstractions;
+using Titan_Project.Server.Application.Products;
 using Titan_Project.Server.Contracts.Products;
 using Titan_Project.Server.Domain.Model;
 using Titan_Project.Server.Domain.Enums;
 using Titan_Project.Server.Infrastructure.Data;
-using Titan_Project.Server.Infrastructure.Images;
 
 namespace Titan_Project.Server.Controllers;
 
 [ApiController]
 [Route("api/recommendations")]
-public class RecommendationsController(AppDBContext db, ICurrentUserContext currentUser, IProductImageStore imageStore) : ControllerBase
+public class RecommendationsController(AppDBContext db, ICurrentUserContext currentUser, IProductQueryService productQuery) : ControllerBase
 {
     [HttpGet("{productId:int}")]
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetSimilar(int productId)
@@ -43,7 +43,7 @@ public class RecommendationsController(AppDBContext db, ICurrentUserContext curr
             .Select(item => item.Product)
             .ToList();
 
-        return Ok(await MapProductsAsync(ranked));
+        return Ok(await productQuery.MapProductsAsync(ranked, CancellationToken.None));
     }
 
     [HttpGet("for-user")]
@@ -52,7 +52,7 @@ public class RecommendationsController(AppDBContext db, ICurrentUserContext curr
         if (!currentUser.IsAuthenticated || currentUser.UserId is null)
         {
             var top = await db.AlcoholProducts.Take(5).ToListAsync();
-            return Ok(await MapProductsAsync(top));
+            return Ok(await productQuery.MapProductsAsync(top, CancellationToken.None));
         }
 
         var userId = currentUser.UserId.Value;
@@ -88,7 +88,7 @@ public class RecommendationsController(AppDBContext db, ICurrentUserContext curr
                 if (recCandidates.Count > 0)
                 {
                     var recs = recCandidates.Take(10).ToList();
-                    return Ok(await MapProductsAsync(recs));
+                    return Ok(await productQuery.MapProductsAsync(recs, CancellationToken.None));
                 }
             }
 
@@ -109,70 +109,11 @@ public class RecommendationsController(AppDBContext db, ICurrentUserContext curr
             }
 
             var recs = await candidates.Where(p => !favList.Contains(p.ProductId)).Take(10).ToListAsync();
-            if (recs.Count > 0) return Ok(await MapProductsAsync(recs));
+            if (recs.Count > 0) return Ok(await productQuery.MapProductsAsync(recs, CancellationToken.None));
         }
 
         var fallback = await db.AlcoholProducts.Take(5).ToListAsync();
-        return Ok(await MapProductsAsync(fallback));
-    }
-
-    private async Task<List<ProductDto>> MapProductsAsync(IEnumerable<AlcoholProduct> products)
-    {
-        var productIds = products.Select(p => p.ProductId).ToList();
-
-        var avgRatings = await db.Reviews
-            .Where(r => productIds.Contains(r.ProductId))
-            .GroupBy(r => r.ProductId)
-            .Select(group => new
-            {
-                ProductId = group.Key,
-                AvgRating = group.Average(r => (double)r.Rating)
-            })
-            .ToDictionaryAsync(x => x.ProductId, x => x.AvgRating);
-
-        var reviewCounts = await db.Reviews
-            .Where(r => productIds.Contains(r.ProductId))
-            .GroupBy(r => r.ProductId)
-            .Select(group => new
-            {
-                ProductId = group.Key,
-                ReviewsCount = group.Count()
-            })
-            .ToDictionaryAsync(x => x.ProductId, x => x.ReviewsCount);
-
-        return products.Select(product =>
-        {
-            avgRatings.TryGetValue(product.ProductId, out var avgRating);
-            reviewCounts.TryGetValue(product.ProductId, out var reviewsCount);
-            var beer = product as BeerProduct;
-            var wine = product as WineProduct;
-
-            return new ProductDto
-            {
-                Id = product.ProductId,
-                Name = product.Name,
-                CategoryName = product.Category.ToString(),
-                StrengthAbv = (double)product.Abv,
-                Country = product.CountryOfOrigin,
-                BasePrice = product.Price,
-                Description = product.Description,
-                AvgRating = avgRating,
-                ReviewsCount = reviewsCount,
-                BeerIbu = beer?.Ibu,
-                BeerSrm = beer?.Srm,
-                BeerColor = beer != null ? beer.Color.ToString() : null,
-                BeerStyle = beer != null ? beer.Style.ToString() : null,
-                WineColor = wine != null ? wine.Color.ToString() : null,
-                WineStyle = wine != null ? wine.Style.ToString() : null,
-                ImageUrl = imageStore.GetPublicUrl(product.ProductId),
-                ImageSourceUrl = imageStore.GetSourceUrl(product.ProductId),
-                ImageLocalPath = imageStore.GetLocalPath(product.ProductId),
-                BeerColorValue = beer != null ? (int?)beer.Color : null,
-                BeerStyleValue = beer != null ? (int?)beer.Style : null,
-                WineColorValue = wine != null ? (int?)wine.Color : null,
-                WineStyleValue = wine != null ? (int?)wine.Style : null,
-            };
-        }).ToList();
+        return Ok(await productQuery.MapProductsAsync(fallback, CancellationToken.None));
     }
 
     private static double ScoreSimilarity(AlcoholProduct baseProduct, AlcoholProduct candidate)

@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { FilterField } from './FilterField';
 
 export default function RangeField({
@@ -28,17 +28,16 @@ export default function RangeField({
   helperText?: string;
   onClassSelect?: (key: string, mid: number) => void;
 }) {
-  const range = max - min || 1;
 
   return (
     <FilterField
       label={label}
       helperText={helperText}
     >
-      <div style={headerStyle}>
-        <span style={edgeLabelStyle}>{leftLabel}</span>
-        <span style={pillStyle}>{`${Number(value).toFixed(step < 1 ? 1 : 0)}${valueSuffix}`}</span>
-        <span style={edgeLabelStyle}>{rightLabel}</span>
+      <div className="grid grid-cols-[auto_auto_auto] justify-between items-center gap-2.5 mb-3">
+        <span className="text-brand-color text-[0.82rem] uppercase tracking-[0.08em]">{leftLabel}</span>
+        <span className="min-w-[56px] text-center px-2.5 py-1.5 rounded-full bg-white text-brand-color border border-[#E7D8C4] font-extrabold">{`${Number(value).toFixed(step < 1 ? 1 : 0)}${valueSuffix}`}</span>
+        <span className="text-brand-color text-[0.82rem] uppercase tracking-[0.08em]">{rightLabel}</span>
       </div>
       <input
         type="range"
@@ -47,9 +46,9 @@ export default function RangeField({
         step={step}
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
-        style={sliderStyle}
+        className="w-full accent-brand-color"
       />
-      <div style={marksStyle}>
+      <div className="flex justify-between gap-2 flex-wrap mt-2.5">
         {marks.map((mark, index) => {
           // clickable class ranges mapping
           const classRanges: Record<string, [number, number]> = {
@@ -83,11 +82,7 @@ export default function RangeField({
                 tabIndex={0}
                 onClick={() => { onClassSelect?.(mark.label, mid); onChange(mid); }}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onClassSelect?.(mark.label, mid); onChange(mid); e.preventDefault(); } }}
-                style={{
-                  ...(active ? activeMarkStyle : markStyle),
-                  cursor: 'pointer',
-                  userSelect: 'none',
-                }}
+                className={`px-2 py-1 rounded-full text-[0.74rem] select-none cursor-pointer ${active ? 'bg-brand-color text-white' : 'bg-[#F4F1EC] text-[#8B7D73]'}`}
               >
                 {mark.label}
               </span>
@@ -95,7 +90,7 @@ export default function RangeField({
           }
 
           return (
-            <span key={mark.label} style={active ? activeMarkStyle : markStyle}>
+            <span key={mark.label} className={`px-2 py-1 rounded-full text-[0.74rem] ${active ? 'bg-brand-color text-white' : 'bg-[#F4F1EC] text-[#8B7D73]'}`}>
               {mark.label}
             </span>
           );
@@ -104,57 +99,3 @@ export default function RangeField({
     </FilterField>
   );
 }
-
-const headerStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'auto auto auto',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  gap: '10px',
-  marginBottom: '12px',
-};
-
-const edgeLabelStyle: CSSProperties = {
-  color: '#5D4037',
-  fontSize: '0.82rem',
-  textTransform: 'uppercase',
-  letterSpacing: '0.08em',
-};
-
-const pillStyle: CSSProperties = {
-  minWidth: '56px',
-  textAlign: 'center',
-  padding: '6px 10px',
-  borderRadius: '999px',
-  background: '#FFFFFF',
-  color: '#5D4037',
-  border: '1px solid #E7D8C4',
-  fontWeight: 800,
-};
-
-const sliderStyle: CSSProperties = {
-  width: '100%',
-  accentColor: '#5D4037',
-};
-
-const marksStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  gap: '8px',
-  flexWrap: 'wrap',
-  marginTop: '10px',
-};
-
-const markStyle: CSSProperties = {
-  padding: '4px 8px',
-  borderRadius: '999px',
-  background: '#F4F1EC',
-  color: '#8B7D73',
-  fontSize: '0.74rem',
-};
-
-const activeMarkStyle: CSSProperties = {
-  ...markStyle,
-  background: '#5D4037',
-  color: '#FFFFFF',
-};

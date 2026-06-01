@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Beer, ChevronRight, Heart, Save, SlidersHorizontal, Sparkles, Star } from 'lucide-react';
-import ProductCard, { type ProductDto } from '../components/ProductCard';
+import ProductCard from '../components/ProductCard';
+import type { ProductDto } from '../types';
 import Notification from '../components/Notification';
 import SelectField from '../components/alcohol/SelectField';
 import RangeField from '../components/alcohol/RangeField';
@@ -21,6 +21,9 @@ import {
   scoreProduct,
   type ProductLike,
 } from '../utils/alcoholProfiles';
+import { apiRoutes } from '../api/routes';
+import { apiFetch } from '../utils/api';
+import { parseProductList } from '../utils/productApi';
 
 export default function AlcoholFinder() {
   const navigate = useNavigate();
@@ -42,9 +45,8 @@ export default function AlcoholFinder() {
 
     const loadProducts = async () => {
       try {
-        const response = await fetch('/api/products');
-        const payload = await response.json();
-        setProducts(Array.isArray(payload) ? payload : payload.value ?? []);
+        const payload = await apiFetch<unknown>(apiRoutes.products.list('page=1&pageSize=100'), { credentials: 'omit' });
+        setProducts(parseProductList<ProductDto>(payload).items);
       } catch (error) {
         console.error('Failed to load products', error);
         setProducts([]);
@@ -83,48 +85,48 @@ export default function AlcoholFinder() {
   }, [products, profile]);
 
   return (
-    <div style={pageStyle}>
-      <section style={heroStyle}>
-        <div style={heroTextPanelStyle}>
-          <div style={heroBadgeStyle}>
+    <div className="max-w-[1280px] mx-auto pt-7 px-5 pb-13">
+      <section className="grid grid-cols-1 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] gap-6.5 items-start mb-7">
+        <div className="text-center pt-5 px-4.5">
+          <div className="inline-flex items-center gap-2.5 px-4.5 py-2 rounded-full bg-[#F5F0E8] text-brand-color font-black tracking-[0.1em] uppercase mb-4">
             <Beer size={16} /> Alcohol finder
           </div>
-          <h1 style={heroTitleStyle}>Find a drink that matches your taste.</h1>
-          <p style={heroTextStyle}>
+          <h1 className="mx-auto mb-3.5 text-text-main text-[clamp(2.6rem,4vw,4.8rem)] font-black leading-[1.02] max-w-[12ch]">Find a drink that matches your taste.</h1>
+          <p className="mx-auto max-w-[62ch] text-[1.05rem] leading-[1.7] text-text-muted">
             Choose the alcohol type, then the menu shows only the controls for that category. Results update instantly while you move the filters.
           </p>
 
-          <div style={heroActionsStyle}>
-            <button type="button" onClick={createAccount} style={primaryActionStyle}>
+          <div className="flex gap-3 justify-center flex-wrap mt-5.5">
+            <button type="button" onClick={createAccount} className="inline-flex items-center gap-2.5 px-4.5 py-3.5 rounded-2xl border border-brand-color bg-brand-color text-white font-extrabold cursor-pointer hover:bg-opacity-90 transition-colors">
               Create account and save profile <ChevronRight size={18} />
             </button>
-            <Link to="/catalog" style={secondaryActionStyle}>
+            <Link to="/catalog" className="inline-flex items-center justify-center px-4.5 py-3.5 rounded-2xl border border-[#E7D8C4] bg-[#F5F0E8] text-brand-color font-extrabold no-underline hover:bg-brand-color hover:text-white transition-colors">
               Open full catalog
             </Link>
           </div>
 
-          <div style={heroPromoGridStyle}>
-            <div style={heroPromoCardStyle}>
-              <Star size={18} color="#5D4037" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-7">
+            <div className="flex items-start gap-3 p-4 rounded-[20px] bg-bg-main border border-[#EFE7DB] text-left">
+              <Star size={18} className="text-brand-color shrink-0" />
               <div>
-                <strong>Live filtering</strong>
-                <p>Results refresh the moment you change a control.</p>
+                <strong className="block text-text-main mb-1">Live filtering</strong>
+                <p className="m-0 text-text-muted text-sm leading-relaxed">Results refresh the moment you change a control.</p>
               </div>
             </div>
-            <div style={heroPromoCardStyle}>
-              <Heart size={18} color="#5D4037" />
+            <div className="flex items-start gap-3 p-4 rounded-[20px] bg-bg-main border border-[#EFE7DB] text-left">
+              <Heart size={18} className="text-brand-color shrink-0" />
               <div>
-                <strong>Save the profile</strong>
-                <p>Keep your choices locally and attach them to an account later.</p>
+                <strong className="block text-text-main mb-1">Save the profile</strong>
+                <p className="m-0 text-text-muted text-sm leading-relaxed">Keep your choices locally and attach them to an account later.</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div style={finderCardStyle}>
-          <div style={finderTopStyle}>
-            <div style={selectBlockStyle}>
-              <div style={fieldLabelStyle}>Alcohol type</div>
+        <div className="p-7 rounded-[34px] bg-white border border-[#EFE7DB] shadow-[0_24px_60px_rgba(93,64,55,0.06)]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4">
+            <div className="grid gap-2">
+              <div className="text-brand-color text-[0.82rem] font-extrabold uppercase tracking-widest">Alcohol type</div>
               <SelectField
                 value={profile.category}
                 onChange={(value) => updateProfile({ category: value as AlcoholCategory })}
@@ -133,8 +135,8 @@ export default function AlcoholFinder() {
               />
             </div>
 
-            <div style={selectBlockStyle}>
-              <div style={fieldLabelStyle}>Price</div>
+            <div className="grid gap-2">
+              <div className="text-brand-color text-[0.82rem] font-extrabold uppercase tracking-widest">Price</div>
               <SelectField
                 value={profile.priceBand}
                 onChange={(value) => updateProfile({ priceBand: value as AlcoholProfile['priceBand'] })}
@@ -144,13 +146,13 @@ export default function AlcoholFinder() {
             </div>
           </div>
 
-          <div style={categoryDescriptionStyle}>
-            <strong style={{ color: '#2D2424' }}>{categoryDefinition.title}</strong>
-            <span style={{ color: '#6B7280' }}>{categoryDefinition.description}</span>
+          <div className="flex flex-col gap-1 px-0.5 pb-4 text-text-muted">
+            <strong className="text-text-main">{categoryDefinition.title}</strong>
+            <span>{categoryDefinition.description}</span>
           </div>
 
-          {profile.category !== 'All' ? (
-            <div style={controlGridStyle}>
+          {profile.category !== 'All' && (
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3.5">
               {visibleControls.map((control) => {
                 if (control.kind === 'select') {
                   const controlValue = control.valueKey === 'primaryChoice'
@@ -160,8 +162,8 @@ export default function AlcoholFinder() {
                       : profile.priceBand;
 
                   return (
-                    <div key={control.id} style={controlCellStyle}>
-                      <div style={fieldLabelStyle}>{control.label}</div>
+                    <div key={control.id} className="grid gap-2">
+                      <div className="text-brand-color text-[0.82rem] font-extrabold uppercase tracking-widest">{control.label}</div>
                       <SelectField
                         value={controlValue}
                         onChange={(value) => updateProfile({ [control.valueKey]: value } as Partial<AlcoholProfile>)}
@@ -169,13 +171,13 @@ export default function AlcoholFinder() {
                         placeholder={`Select ${control.label.toLowerCase()}`}
                         compact={false}
                       />
-                      {control.helperText ? <div style={controlHelperStyle}>{control.helperText}</div> : null}
+                      {control.helperText && <div className="text-[#7A736C] text-[0.8rem] leading-[1.5]">{control.helperText}</div>}
                     </div>
                   );
                 }
 
                 return (
-                  <div key={control.id} style={controlCellStyle}>
+                  <div key={control.id} className="grid gap-2">
                     <RangeField
                       label={control.label}
                       value={profile[control.valueKey] as number}
@@ -193,35 +195,35 @@ export default function AlcoholFinder() {
                 );
               })}
             </div>
-          ) : null}
+          )}
 
-          <div style={finderFooterStyle}>
+          <div className="flex justify-between items-center gap-3 mt-4.5 pt-4.5 border-t border-[#E5D8C9]">
             <div>
-              <p style={finderFooterLabelStyle}>Current selection</p>
-              <p style={finderFooterValueStyle}>{describeProfile(profile)}</p>
+              <p className="m-0 text-[#8B7D73] text-[0.78rem] uppercase tracking-widest">Current selection</p>
+              <p className="mt-1 mb-0 text-text-main font-black text-[1.05rem]">{describeProfile(profile)}</p>
             </div>
-            <button type="button" onClick={saveProfile} style={saveActionStyle}>
+            <button type="button" onClick={saveProfile} className="inline-flex items-center gap-2 border border-[#E7D8C4] bg-[#FAF8F5] text-brand-color px-4 py-3 rounded-2xl font-black cursor-pointer hover:bg-brand-color hover:text-white transition-colors">
               <Save size={16} /> Save profile
             </button>
           </div>
 
-          {savedNotice ? <Notification type="success">{savedNotice}</Notification> : null}
+          {savedNotice && <div className="mt-4"><Notification type="success">{savedNotice}</Notification></div>}
         </div>
       </section>
 
-      <section style={resultsHeaderStyle}>
+      <section className="flex justify-between items-end gap-3 my-7">
         <div>
-          <p style={resultsEyebrowStyle}><SlidersHorizontal size={16} /> Live results</p>
-          <h2 style={resultsTitleStyle}>Suitable drinks</h2>
+          <p className="inline-flex items-center gap-2 m-0 text-brand-color font-black uppercase tracking-[0.08em] text-[0.8rem]"><SlidersHorizontal size={16} /> Live results</p>
+          <h2 className="mt-2 mb-0 text-text-main text-3xl font-black">Suitable drinks</h2>
         </div>
-        <div style={resultCountStyle}>{loading ? 'Loading...' : `${filteredProducts.length} matches`}</div>
+        <div className="text-gray-500 font-bold">{loading ? 'Loading...' : `${filteredProducts.length} matches`}</div>
       </section>
 
-      <section style={resultsGridStyle}>
+      <section className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-6">
         {loading ? (
-          <div style={emptyStateStyle}>Loading products...</div>
+          <div className="col-span-full min-h-[180px] rounded-[22px] border border-dashed border-[#D8C4AF] bg-bg-main flex items-center justify-center gap-2.5 text-gray-500 font-bold">Loading products...</div>
         ) : filteredProducts.length === 0 ? (
-          <div style={emptyStateStyle}>
+          <div className="col-span-full min-h-[180px] rounded-[22px] border border-dashed border-[#D8C4AF] bg-bg-main flex items-center justify-center gap-2.5 text-gray-500 font-bold">
             <Sparkles size={22} /> No close matches yet. Try a different alcohol type or price band.
           </div>
         ) : (
@@ -229,355 +231,33 @@ export default function AlcoholFinder() {
         )}
       </section>
 
-      <section style={promoRowStyle}>
-        <div style={promoCardStyle}>
-          <Star color="#5D4037" size={28} />
+      <section className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4 mt-7">
+        <div className="flex gap-3.5 items-start p-4.5 bg-white border border-[#EFE7DB] rounded-[20px]">
+          <Star className="text-brand-color shrink-0" size={28} />
           <div>
-            <h3 style={promoTitleStyle}>All alcohol types</h3>
-            <p style={promoTextStyle}>The menu can grow to new categories by changing config, not page logic.</p>
+            <h3 className="m-0 mb-1.5 text-text-main text-[1.05rem] font-black">All alcohol types</h3>
+            <p className="m-0 text-text-muted leading-[1.6]">The menu can grow to new categories by changing config, not page logic.</p>
           </div>
         </div>
-        <div style={promoCardStyle}>
-          <Heart color="#5D4037" size={28} />
+        <div className="flex gap-3.5 items-start p-4.5 bg-white border border-[#EFE7DB] rounded-[20px]">
+          <Heart className="text-brand-color shrink-0" size={28} />
           <div>
-            <h3 style={promoTitleStyle}>Save your preferences</h3>
-            <p style={promoTextStyle}>Create an account when you want the selected filters remembered permanently.</p>
+            <h3 className="m-0 mb-1.5 text-text-main text-[1.05rem] font-black">Save your preferences</h3>
+            <p className="m-0 text-text-muted leading-[1.6]">Create an account when you want the selected filters remembered permanently.</p>
           </div>
         </div>
       </section>
 
-      <section style={footerBannerStyle}>
-        <h2 style={footerTitleStyle}>Want these filters tied to your account?</h2>
-        <p style={footerTextStyle}>Create an account now and the same profile can be reused later for recommendations.</p>
-        <div style={footerActionsStyle}>
-          <button type="button" onClick={createAccount} style={footerPrimaryActionStyle}>
+      <section className="mt-7 text-center py-7.5 px-5.5 rounded-3xl bg-[#F5F0E8] border border-[#E7D8C4]">
+        <h2 className="m-0 mb-2.5 text-brand-color text-[1.6rem] font-black">Want these filters tied to your account?</h2>
+        <p className="m-0 mb-4.5 text-text-muted leading-[1.6]">Create an account now and the same profile can be reused later for recommendations.</p>
+        <div className="flex justify-center gap-3 flex-wrap">
+          <button type="button" onClick={createAccount} className="inline-flex items-center gap-2.5 px-4.5 py-3.5 rounded-2xl border border-brand-color bg-brand-color text-white font-extrabold cursor-pointer hover:bg-opacity-90 transition-colors no-underline">
             Create account
           </button>
-          <Link to="/login" style={footerLinkStyle}>Sign in instead</Link>
+          <Link to="/login" className="inline-flex items-center justify-center px-4.5 py-3.5 rounded-2xl border border-[#E7D8C4] bg-white text-brand-color font-black no-underline hover:bg-gray-50 transition-colors">Sign in instead</Link>
         </div>
       </section>
     </div>
   );
 }
-
-const pageStyle: CSSProperties = {
-  maxWidth: '1280px',
-  margin: '0 auto',
-  padding: '28px 20px 52px',
-};
-
-const heroStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'minmax(0, 0.92fr) minmax(0, 1.08fr)',
-  gap: '26px',
-  alignItems: 'start',
-  marginBottom: '28px',
-};
-
-const heroTextPanelStyle: CSSProperties = {
-  textAlign: 'center',
-  padding: '22px 18px 0',
-};
-
-const heroBadgeStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '10px',
-  padding: '8px 18px',
-  borderRadius: '999px',
-  background: '#F5F0E8',
-  color: '#5D4037',
-  fontWeight: 900,
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  marginBottom: '16px',
-};
-
-const heroTitleStyle: CSSProperties = {
-  margin: '0 auto 14px',
-  color: '#2D2424',
-  fontSize: 'clamp(2.6rem, 4vw, 4.8rem)',
-  fontWeight: 900,
-  lineHeight: 1.02,
-  maxWidth: '12ch',
-};
-
-const heroTextStyle: CSSProperties = {
-  margin: '0 auto',
-  maxWidth: '62ch',
-  fontSize: '1.05rem',
-  lineHeight: 1.7,
-  color: '#6B7280',
-};
-
-const heroActionsStyle: CSSProperties = {
-  display: 'flex',
-  gap: '12px',
-  justifyContent: 'center',
-  flexWrap: 'wrap',
-  marginTop: '22px',
-};
-
-const primaryActionStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '10px',
-  padding: '14px 18px',
-  borderRadius: '14px',
-  border: '1px solid #5D4037',
-  background: '#5D4037',
-  color: '#FFFFFF',
-  fontWeight: 800,
-  cursor: 'pointer',
-};
-
-const secondaryActionStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '14px 18px',
-  borderRadius: '14px',
-  border: '1px solid #E7D8C4',
-  background: '#F5F0E8',
-  color: '#5D4037',
-  fontWeight: 800,
-  textDecoration: 'none',
-};
-
-const heroPromoGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-  gap: '14px',
-  marginTop: '28px',
-};
-
-const heroPromoCardStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'flex-start',
-  gap: '12px',
-  padding: '16px',
-  borderRadius: '20px',
-  background: '#FAF8F5',
-  border: '1px solid #EFE7DB',
-  textAlign: 'left',
-};
-
-const finderCardStyle: CSSProperties = {
-  padding: '28px',
-  borderRadius: '34px',
-  background: '#FFFFFF',
-  border: '1px solid #EFE7DB',
-  boxShadow: '0 24px 60px rgba(93, 64, 55, 0.06)',
-};
-
-const finderTopStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-  gap: '14px',
-  marginBottom: '16px',
-};
-
-const selectBlockStyle: CSSProperties = {
-  display: 'grid',
-  gap: '8px',
-};
-
-const fieldLabelStyle: CSSProperties = {
-  color: '#5D4037',
-  fontSize: '0.82rem',
-  fontWeight: 800,
-  textTransform: 'uppercase',
-  letterSpacing: '0.08em',
-};
-
-const categoryDescriptionStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '4px',
-  padding: '0 2px 16px',
-  color: '#6B7280',
-};
-
-const controlGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-  gap: '14px',
-};
-
-const controlCellStyle: CSSProperties = {
-  display: 'grid',
-  gap: '8px',
-};
-
-const controlHelperStyle: CSSProperties = {
-  color: '#7A736C',
-  fontSize: '0.8rem',
-  lineHeight: 1.5,
-};
-
-const finderFooterStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  gap: '12px',
-  marginTop: '18px',
-  paddingTop: '18px',
-  borderTop: '1px solid #E5D8C9',
-};
-
-const finderFooterLabelStyle: CSSProperties = {
-  margin: 0,
-  color: '#8B7D73',
-  fontSize: '0.78rem',
-  textTransform: 'uppercase',
-  letterSpacing: '0.09em',
-};
-
-const finderFooterValueStyle: CSSProperties = {
-  margin: '4px 0 0',
-  color: '#2D2424',
-  fontWeight: 900,
-  fontSize: '1.05rem',
-};
-
-const saveActionStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '8px',
-  border: '1px solid #E7D8C4',
-  background: '#FAF8F5',
-  color: '#5D4037',
-  padding: '12px 16px',
-  borderRadius: '14px',
-  fontWeight: 900,
-  cursor: 'pointer',
-};
-
-const resultsHeaderStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'end',
-  gap: '12px',
-  margin: '28px 0 18px',
-};
-
-const resultsEyebrowStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '8px',
-  margin: 0,
-  color: '#5D4037',
-  fontWeight: 900,
-  textTransform: 'uppercase',
-  letterSpacing: '0.08em',
-  fontSize: '0.8rem',
-};
-
-const resultsTitleStyle: CSSProperties = {
-  margin: '8px 0 0',
-  color: '#2D2424',
-  fontSize: '2rem',
-  fontWeight: 900,
-};
-
-const resultCountStyle: CSSProperties = {
-  color: '#6B7280',
-  fontWeight: 700,
-};
-
-const resultsGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-  gap: '24px',
-};
-
-const emptyStateStyle: CSSProperties = {
-  gridColumn: '1 / -1',
-  minHeight: '180px',
-  borderRadius: '22px',
-  border: '1px dashed #D8C4AF',
-  background: '#FAF8F5',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '10px',
-  color: '#6B7280',
-  fontWeight: 700,
-};
-
-const promoRowStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-  gap: '16px',
-  marginTop: '28px',
-};
-
-const promoCardStyle: CSSProperties = {
-  display: 'flex',
-  gap: '14px',
-  alignItems: 'flex-start',
-  padding: '18px',
-  background: '#FFFFFF',
-  border: '1px solid #EFE7DB',
-  borderRadius: '20px',
-};
-
-const promoTitleStyle: CSSProperties = {
-  margin: '0 0 6px',
-  color: '#2D2424',
-  fontSize: '1.05rem',
-  fontWeight: 900,
-};
-
-const promoTextStyle: CSSProperties = {
-  margin: 0,
-  color: '#6B7280',
-  lineHeight: 1.6,
-};
-
-const footerBannerStyle: CSSProperties = {
-  marginTop: '28px',
-  textAlign: 'center',
-  padding: '30px 22px',
-  borderRadius: '24px',
-  background: '#F5F0E8',
-  border: '1px solid #E7D8C4',
-};
-
-const footerTitleStyle: CSSProperties = {
-  margin: '0 0 10px',
-  color: '#5D4037',
-  fontSize: '1.6rem',
-  fontWeight: 900,
-};
-
-const footerTextStyle: CSSProperties = {
-  margin: '0 0 18px',
-  color: '#6B7280',
-  lineHeight: 1.6,
-};
-
-const footerActionsStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'center',
-  gap: '12px',
-  flexWrap: 'wrap',
-};
-
-const footerPrimaryActionStyle: CSSProperties = {
-  ...primaryActionStyle,
-  textDecoration: 'none',
-};
-
-const footerLinkStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '14px 18px',
-  borderRadius: '14px',
-  border: '1px solid #E7D8C4',
-  background: '#FFFFFF',
-  color: '#5D4037',
-  fontWeight: 900,
-  textDecoration: 'none',
-};
