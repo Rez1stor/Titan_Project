@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Dashboard.Sdk.win-x64" Version="13.2.4" />
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.2.4" />
-    <PackageReference Include="Aspire.Hosting.Orchestration.win-x64" Version="13.2.4" />
+    <PackageReference Include="Aspire.Dashboard.Sdk.win-x64" Version="13.2.4" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.2.4" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <PackageReference Include="Aspire.Hosting.Orchestration.win-x64" Version="13.2.4" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.7">
@@ -36,5 +36,6 @@
 
   <ItemGroup>
     <Content Update="beer-catalog.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="wine-catalog.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
