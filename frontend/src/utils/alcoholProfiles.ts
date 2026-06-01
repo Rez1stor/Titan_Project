@@ -82,35 +82,12 @@ export const defaultAlcoholProfile: AlcoholProfile = {
   priceBand: 'Any',
 };
 
-const beerStyleOptions: ControlOption[] = [
-  { label: 'Lager', value: 'Lager' },
-  { label: 'Ale', value: 'Ale' },
-  { label: 'Wheat', value: 'Wheat' },
-  { label: 'Sour', value: 'Sour' },
-  { label: 'Belgian', value: 'Belgian' },
-];
-
-const beerClassOptions: ControlOption[] = [
-  { label: 'Pale', value: 'Pale' },
-  { label: 'Amber', value: 'Amber' },
-  { label: 'Brown', value: 'Brown' },
-  { label: 'Dark', value: 'Dark' },
-];
-
-const wineStyleOptions: ControlOption[] = [
-  { label: 'Still', value: 'Still' },
-  { label: 'Sparkling', value: 'Sparkling' },
-  { label: 'Fortified', value: 'Fortified' },
-  { label: 'Dessert', value: 'Dessert' },
-  { label: 'Other', value: 'Other' },
-];
-
-const wineColorOptions: ControlOption[] = [
-  { label: 'Red', value: 'Red' },
-  { label: 'White', value: 'White' },
-  { label: 'Rose', value: 'Rose' },
-  { label: 'Orange', value: 'Orange' },
-];
+import {
+  BEER_CLASS_OPTIONS,
+  BEER_STYLE_FAMILIES,
+  WINE_COLOR_OPTIONS,
+  WINE_STYLE_OPTIONS,
+} from './alcoholOptions';
 
 const genericOptions: ControlOption[] = [
   { label: 'Classic', value: 'Classic' },
@@ -138,7 +115,7 @@ export const categoryDefinitions: Record<AlcoholCategory, CategoryDefinition> = 
         id: 'primaryChoice',
         label: 'Style family',
         valueKey: 'primaryChoice',
-        options: beerStyleOptions,
+        options: BEER_STYLE_FAMILIES,
         helperText: 'Choose the beer family first.',
       },
       {
@@ -146,7 +123,7 @@ export const categoryDefinitions: Record<AlcoholCategory, CategoryDefinition> = 
         id: 'secondaryChoice',
         label: 'Class',
         valueKey: 'secondaryChoice',
-        options: beerClassOptions,
+        options: BEER_CLASS_OPTIONS,
         helperText: 'Pick the color class you want to see.',
       },
       {
@@ -197,7 +174,7 @@ export const categoryDefinitions: Record<AlcoholCategory, CategoryDefinition> = 
         id: 'primaryChoice',
         label: 'Style',
         valueKey: 'primaryChoice',
-        options: wineStyleOptions,
+        options: WINE_STYLE_OPTIONS,
         helperText: 'Pick the wine style.',
       },
       {
@@ -205,7 +182,7 @@ export const categoryDefinitions: Record<AlcoholCategory, CategoryDefinition> = 
         id: 'secondaryChoice',
         label: 'Color',
         valueKey: 'secondaryChoice',
-        options: wineColorOptions,
+        options: WINE_COLOR_OPTIONS,
         helperText: 'Pick the wine color.',
       },
       {

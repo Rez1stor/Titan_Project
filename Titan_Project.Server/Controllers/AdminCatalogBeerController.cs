@@ -25,6 +25,11 @@ public class AdminCatalogBeerController(IConfiguration configuration, IHttpClien
     {
         var limit = Math.Clamp(count, 1, 20);
         var client = BuildClient();
+        var existingNames = db.AlcoholProducts
+            .AsNoTracking()
+            .Select(product => product.Name)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         List<CatalogBeerApiDto> candidates;
         if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
@@ -56,6 +61,11 @@ public class AdminCatalogBeerController(IConfiguration configuration, IHttpClien
         var scored = new List<(CatalogBeerSuggestionDto Item, int Score)>();
         foreach (var candidate in candidates)
         {
+            if (existingNames.Contains(candidate.Name!.Trim()))
+            {
+                continue;
+            }
+
             var detailsResponse = await client.GetAsync($"/beer/{Uri.EscapeDataString(candidate.Id!)}");
             if (!detailsResponse.IsSuccessStatusCode)
                 continue;

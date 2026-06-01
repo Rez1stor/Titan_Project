@@ -23,7 +23,7 @@ public sealed class AdminImageSearchController : ControllerBase
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(type))
             return BadRequest("name and type are required");
 
-        var candidates = await ((OpenFoodFactsAlcoholSeedService)_seedService).FindCandidatesAsync(name, type, styleOrDetail, CancellationToken.None);
+        var candidates = await _seedService.FindCandidatesAsync(name, type, styleOrDetail, CancellationToken.None);
 
         return Ok(candidates);
     }

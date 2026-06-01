@@ -2,67 +2,21 @@ import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
-    <footer style={shellStyle}>
-      <div style={contentStyle}>
+    <footer className="w-full mt-6 bg-text-main py-6 px-4">
+      <div className="max-w-[1180px] w-full mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-5 p-8 text-orange-50 bg-transparent rounded-none">
         <div>
-          <div style={brandStyle}>TITAN</div>
-          <p style={textStyle}>
+          <div className="text-[#F2C9A7] text-xl font-black tracking-wider">TITAN</div>
+          <p className="mt-2 text-[#E7D8C4] max-w-[56ch] leading-relaxed">
             A structured alcohol catalog built to grow from beer and wine into more categories without redesigning the core flow.
           </p>
         </div>
 
-        <nav style={linksStyle} aria-label="Footer">
-          <Link to="/catalog" style={linkStyle}>Catalog</Link>
-          <Link to="/favorites" style={linkStyle}>Favorites</Link>
-          <Link to="/recommendations" style={linkStyle}>Recommendations</Link>
+        <nav className="flex gap-4.5 flex-wrap" aria-label="Footer">
+          <Link to="/catalog" className="text-orange-50 no-underline font-bold hover:text-[#F2C9A7] transition-colors">Catalog</Link>
+          <Link to="/favorites" className="text-orange-50 no-underline font-bold hover:text-[#F2C9A7] transition-colors">Favorites</Link>
+          <Link to="/recommendations" className="text-orange-50 no-underline font-bold hover:text-[#F2C9A7] transition-colors">Recommendations</Link>
         </nav>
       </div>
     </footer>
   );
 }
-
-const shellStyle: React.CSSProperties = {
-  width: '100%',
-  marginTop: '24px',
-  background: '#2D2424',
-  padding: '20px 16px 24px',
-};
-
-const contentStyle: React.CSSProperties = {
-  width: 'min(1180px, 100%)',
-  margin: '0 auto',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  gap: '20px',
-  padding: '30px 32px',
-  borderRadius: '0',
-  background: 'transparent',
-  color: '#FFF7ED',
-};
-
-const brandStyle: React.CSSProperties = {
-  color: '#F2C9A7',
-  fontSize: '1.2rem',
-  fontWeight: 900,
-  letterSpacing: '0.08em',
-};
-
-const textStyle: React.CSSProperties = {
-  margin: '8px 0 0',
-  color: '#E7D8C4',
-  maxWidth: '56ch',
-  lineHeight: 1.6,
-};
-
-const linksStyle: React.CSSProperties = {
-  display: 'flex',
-  gap: '18px',
-  flexWrap: 'wrap',
-};
-
-const linkStyle: React.CSSProperties = {
-  color: '#FFF7ED',
-  textDecoration: 'none',
-  fontWeight: 700,
-};

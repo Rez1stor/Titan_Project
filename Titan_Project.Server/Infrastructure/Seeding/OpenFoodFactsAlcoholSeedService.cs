@@ -239,7 +239,7 @@ public sealed class OpenFoodFactsAlcoholSeedService : IAlcoholSeedService
             using var response = await httpClient.GetAsync(imageUrl, cancellationToken);
             response.EnsureSuccessStatusCode();
 
-            var extension = Path.GetExtension(new Uri(imageUrl).AbsolutePath);
+            var extension = ResolveImageExtension(imageUrl, response.Content.Headers.ContentType?.MediaType);
             if (string.IsNullOrWhiteSpace(extension))
             {
                 extension = ".jpg";
@@ -259,6 +259,26 @@ public sealed class OpenFoodFactsAlcoholSeedService : IAlcoholSeedService
             logger.LogWarning(ex, "Failed to download image for {ProductName} from {ImageUrl}", productName, imageUrl);
             return null;
         }
+    }
+
+    private static string? ResolveImageExtension(string imageUrl, string? contentType)
+    {
+        var extension = Path.GetExtension(new Uri(imageUrl).AbsolutePath).ToLowerInvariant();
+        if (extension is ".jpg" or ".jpeg" or ".png" or ".webp" or ".gif" or ".bmp")
+        {
+            return extension == ".jpeg" ? ".jpg" : extension;
+        }
+
+        return contentType?.ToLowerInvariant() switch
+        {
+            "image/jpeg" => ".jpg",
+            "image/jpg" => ".jpg",
+            "image/png" => ".png",
+            "image/webp" => ".webp",
+            "image/gif" => ".gif",
+            "image/bmp" => ".bmp",
+            _ => null
+        };
     }
 
     private static string SanitizeFileName(string value)

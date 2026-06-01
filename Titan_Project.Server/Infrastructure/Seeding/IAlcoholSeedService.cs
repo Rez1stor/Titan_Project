@@ -1,4 +1,4 @@
-using Titan_Project.Server.Contracts.Seeding;
+﻿using Titan_Project.Server.Contracts.Seeding;
 
 namespace Titan_Project.Server.Infrastructure.Seeding;
 
