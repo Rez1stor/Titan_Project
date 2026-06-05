@@ -4,11 +4,12 @@ import { Beer, ChevronRight, Heart, Save, SlidersHorizontal, Sparkles, Star } fr
 import ProductCard from '../components/ProductCard';
 import type { ProductDto } from '../types';
 import Notification from '../components/Notification';
-import SelectField from '../components/alcohol/SelectField';
+import MultiSelectField from '../components/alcohol/MultiSelectField';
 import RangeField from '../components/alcohol/RangeField';
 import {
   type AlcoholProfile,
   type AlcoholCategory,
+  type PriceBand,
   STORAGE_KEY,
   alcoholCategories,
   defaultAlcoholProfile,
@@ -22,13 +23,14 @@ import {
   type ProductLike,
 } from '../utils/alcoholProfiles';
 import { apiRoutes } from '../api/routes';
-import { apiFetch } from '../utils/api';
+import { apiFetch, userHeaders } from '../utils/api';
 import { parseProductList } from '../utils/productApi';
 
 export default function AlcoholFinder() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<AlcoholProfile>(defaultAlcoholProfile);
   const [products, setProducts] = useState<ProductDto[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
 
@@ -37,7 +39,23 @@ export default function AlcoholFinder() {
 
     if (rawProfile) {
       try {
-        setProfile((current) => ({ ...current, ...(JSON.parse(rawProfile) as Partial<AlcoholProfile>) }));
+        const parsed = JSON.parse(rawProfile) as Partial<AlcoholProfile>;
+        // Upgrade check: if they have the old format (category string), convert to array
+        const oldFormat = parsed as any;
+        if ('category' in oldFormat && typeof oldFormat.category === 'string') {
+           setProfile({
+             ...defaultAlcoholProfile,
+             categories: [oldFormat.category as AlcoholCategory],
+             primaryChoices: oldFormat.primaryChoice ? [oldFormat.primaryChoice as string] : [],
+             secondaryChoices: oldFormat.secondaryChoice ? [oldFormat.secondaryChoice as string] : [],
+             priceBands: oldFormat.priceBand ? [oldFormat.priceBand as PriceBand] : ['Any'],
+             color: oldFormat.color ?? 22,
+             bitterness: oldFormat.bitterness ?? 40,
+             strength: oldFormat.strength ?? 5,
+           });
+        } else {
+           setProfile((current) => ({ ...current, ...parsed }));
+        }
       } catch {
         window.localStorage.removeItem(STORAGE_KEY);
       }
@@ -45,8 +63,13 @@ export default function AlcoholFinder() {
 
     const loadProducts = async () => {
       try {
-        const payload = await apiFetch<unknown>(apiRoutes.products.list('page=1&pageSize=100'), { credentials: 'omit' });
+        const [payload, favPayload] = await Promise.all([
+          apiFetch<unknown>(apiRoutes.products.list('page=1&pageSize=100'), { credentials: 'omit' }),
+          userHeaders().then(h => apiFetch<unknown>(apiRoutes.favorites.list, { headers: h })).catch(() => []),
+        ]);
         setProducts(parseProductList<ProductDto>(payload).items);
+        const favs = parseProductList<ProductDto>(favPayload).items;
+        setFavoriteIds(favs.map(f => String(f.id)));
       } catch (error) {
         console.error('Failed to load products', error);
         setProducts([]);
@@ -73,13 +96,32 @@ export default function AlcoholFinder() {
     navigate('/register');
   };
 
-  const categoryDefinition = getCategoryDefinition(profile.category);
-  const visibleControls = profile.category === 'All' ? [] : categoryDefinition.controls;
+  const handleCategoriesChange = (values: string[]) => {
+    let newCats = values as AlcoholCategory[];
+    if (newCats.length === 0) newCats = ['All'];
+    updateProfile({ categories: newCats });
+  };
+
+  const toggleFavorite = async (productId: number | string) => {
+    const favoriteId = String(productId);
+    const isFav = favoriteIds.includes(favoriteId);
+    try {
+      const headers = await userHeaders({ 'Content-Type': 'application/json' });
+      await apiFetch(apiRoutes.favorites.byProductId(productId), {
+        method: isFav ? 'DELETE' : 'POST',
+        headers,
+        parseJson: false,
+      });
+      setFavoriteIds((current) => (isFav ? current.filter((id) => id !== favoriteId) : [...current, favoriteId]));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const filteredProducts = useMemo(() => {
     return products
-      .filter((product) => matchesCategory(product, profile.category))
-      .filter((product) => matchesPrice(product.basePrice, profile.priceBand))
+      .filter((product) => matchesCategory(product, profile.categories))
+      .filter((product) => matchesPrice(product.basePrice, profile.priceBands))
       .filter((product) => matchesTaste(product, profile))
       .sort((left, right) => scoreProduct(right as ProductLike, profile) - scoreProduct(left as ProductLike, profile));
   }, [products, profile]);
@@ -93,7 +135,7 @@ export default function AlcoholFinder() {
           </div>
           <h1 className="mx-auto mb-3.5 text-text-main text-[clamp(2.6rem,4vw,4.8rem)] font-black leading-[1.02] max-w-[12ch]">Find a drink that matches your taste.</h1>
           <p className="mx-auto max-w-[62ch] text-[1.05rem] leading-[1.7] text-text-muted">
-            Choose the alcohol type, then the menu shows only the controls for that category. Results update instantly while you move the filters.
+            Choose the alcohol types, then the menu shows only the controls for those categories. Results update instantly while you move the filters.
           </p>
 
           <div className="flex gap-3 justify-center flex-wrap mt-5.5">
@@ -126,76 +168,81 @@ export default function AlcoholFinder() {
         <div className="p-7 rounded-[34px] bg-white border border-[#EFE7DB] shadow-[0_24px_60px_rgba(93,64,55,0.06)]">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4">
             <div className="grid gap-2">
-              <div className="text-brand-color text-[0.82rem] font-extrabold uppercase tracking-widest">Alcohol type</div>
-              <SelectField
-                value={profile.category}
-                onChange={(value) => updateProfile({ category: value as AlcoholCategory })}
-                options={alcoholCategories.map((category) => ({ label: category, value: category }))}
-                compact={false}
+              <div className="text-brand-color text-[0.82rem] font-extrabold uppercase tracking-widest">Alcohol types</div>
+              <MultiSelectField
+                value={profile.categories}
+                onChange={handleCategoriesChange}
+                options={alcoholCategories.filter(c => c !== 'All').map((category) => ({ label: category, value: category }))}
+                placeholder="Select types"
               />
             </div>
 
             <div className="grid gap-2">
               <div className="text-brand-color text-[0.82rem] font-extrabold uppercase tracking-widest">Price</div>
-              <SelectField
-                value={profile.priceBand}
-                onChange={(value) => updateProfile({ priceBand: value as AlcoholProfile['priceBand'] })}
-                options={priceBands.map((band) => ({ label: band.label, value: band.value }))}
-                compact={false}
+              <MultiSelectField
+                value={profile.priceBands}
+                onChange={(values) => {
+                  const bands = values as PriceBand[];
+                  updateProfile({ priceBands: bands.length ? bands : ['Any'] });
+                }}
+                options={priceBands.filter((b) => b.value !== 'Any').map((band) => ({ label: band.label, value: band.value }))}
+                placeholder="Select price bands"
               />
             </div>
           </div>
 
-          <div className="flex flex-col gap-1 px-0.5 pb-4 text-text-muted">
-            <strong className="text-text-main">{categoryDefinition.title}</strong>
-            <span>{categoryDefinition.description}</span>
-          </div>
+          {profile.categories.filter(c => c !== 'All').map((cat) => {
+            const categoryDefinition = getCategoryDefinition(cat);
+            if (!categoryDefinition) return null;
 
-          {profile.category !== 'All' && (
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3.5">
-              {visibleControls.map((control) => {
-                if (control.kind === 'select') {
-                  const controlValue = control.valueKey === 'primaryChoice'
-                    ? profile.primaryChoice
-                    : control.valueKey === 'secondaryChoice'
-                      ? profile.secondaryChoice
-                      : profile.priceBand;
+            return (
+              <div key={cat} className="mb-6">
+                <div className="flex flex-col gap-1 mb-4 text-text-muted">
+                  <strong className="text-text-main">{categoryDefinition.title}</strong>
+                  <span className="text-sm">{categoryDefinition.description}</span>
+                </div>
 
-                  return (
-                    <div key={control.id} className="grid gap-2">
-                      <div className="text-brand-color text-[0.82rem] font-extrabold uppercase tracking-widest">{control.label}</div>
-                      <SelectField
-                        value={controlValue}
-                        onChange={(value) => updateProfile({ [control.valueKey]: value } as Partial<AlcoholProfile>)}
-                        options={control.options}
-                        placeholder={`Select ${control.label.toLowerCase()}`}
-                        compact={false}
-                      />
-                      {control.helperText && <div className="text-[#7A736C] text-[0.8rem] leading-[1.5]">{control.helperText}</div>}
-                    </div>
-                  );
-                }
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3.5">
+                  {categoryDefinition.controls.map((control) => {
+                    if (control.kind === 'select') {
+                      const controlValue = profile[control.valueKey] as string[];
 
-                return (
-                  <div key={control.id} className="grid gap-2">
-                    <RangeField
-                      label={control.label}
-                      value={profile[control.valueKey] as number}
-                      onChange={(value) => updateProfile({ [control.valueKey]: value } as Partial<AlcoholProfile>)}
-                      min={control.min}
-                      max={control.max}
-                      step={control.step}
-                      leftLabel={control.leftLabel}
-                      rightLabel={control.rightLabel}
-                      marks={control.marks}
-                      valueSuffix={control.valueSuffix}
-                      helperText={control.helperText}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                      return (
+                        <div key={control.id} className="grid gap-2">
+                          <div className="text-brand-color text-[0.82rem] font-extrabold uppercase tracking-widest">{control.label}</div>
+                          <MultiSelectField
+                            value={controlValue}
+                            onChange={(value) => updateProfile({ [control.valueKey]: value } as Partial<AlcoholProfile>)}
+                            options={control.options}
+                            placeholder={`Select ${control.label.toLowerCase()}`}
+                          />
+                          {control.helperText && <div className="text-[#7A736C] text-[0.8rem] leading-[1.5]">{control.helperText}</div>}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={control.id} className="grid gap-2">
+                        <RangeField
+                          label={control.label}
+                          value={profile[control.valueKey] as number}
+                          onChange={(value) => updateProfile({ [control.valueKey]: value } as Partial<AlcoholProfile>)}
+                          min={control.min}
+                          max={control.max}
+                          step={control.step}
+                          leftLabel={control.leftLabel}
+                          rightLabel={control.rightLabel}
+                          marks={control.marks}
+                          valueSuffix={control.valueSuffix}
+                          helperText={control.helperText}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
 
           <div className="flex justify-between items-center gap-3 mt-4.5 pt-4.5 border-t border-[#E5D8C9]">
             <div>
@@ -227,7 +274,7 @@ export default function AlcoholFinder() {
             <Sparkles size={22} /> No close matches yet. Try a different alcohol type or price band.
           </div>
         ) : (
-          filteredProducts.map((product) => <ProductCard key={product.id} product={product} />)
+          filteredProducts.map((product) => <ProductCard key={product.id} product={product} isFavorited={favoriteIds.includes(String(product.id))} onToggleFavorite={toggleFavorite} />)
         )}
       </section>
 

@@ -31,6 +31,9 @@ public class LibraryController(
             TargetAbv = user.TargetAbv,
             AbvTolerance = user.AbvTolerance,
             MaxPrice = user.MaxPrice,
+            PreferredTags = string.IsNullOrEmpty(user.PreferredTagsJson) 
+                ? Array.Empty<string>() 
+                : System.Text.Json.JsonSerializer.Deserialize<string[]>(user.PreferredTagsJson) ?? Array.Empty<string>(),
         };
 
         return Ok(new { favorites, preferences = prefs });

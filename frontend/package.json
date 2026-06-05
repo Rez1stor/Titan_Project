@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
-    "build": "tsc -b && vite build",
+    "generate-enums": "node ../scripts/generate-enums.js",
+    "build": "npm run generate-enums && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort"
   },

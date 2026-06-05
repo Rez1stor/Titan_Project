@@ -40,7 +40,7 @@ public sealed class AlcoholImagesController : ControllerBase
         var requestItems = products.Select(MapProduct).ToList();
         var result = await seedService.GenerateAsync(requestItems, "alcohol-seed.json", cancellationToken);
 
-        // Оновлюємо продукти в БД з завантаженими фотками
+        // Update products in the database with downloaded photos
         foreach (var item in result.Items ?? new List<AlcoholSeedExportItemDto>())
         {
             var product = products.FirstOrDefault(p => p.ProductId == item.ProductId);
@@ -58,7 +58,7 @@ public sealed class AlcoholImagesController : ControllerBase
     }
 
     [HttpPost("upload/{productId:int}")]
-    [RequestSizeLimit(20_000_000)]
+    [RequestSizeLimit(52_428_800)]
     public async Task<ActionResult<object>> UploadImage(int productId, [FromForm] IFormFile file, [FromForm] string productName, CancellationToken cancellationToken)
     {
         if (file == null || file.Length == 0)

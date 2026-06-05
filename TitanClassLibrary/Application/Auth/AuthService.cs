@@ -23,6 +23,12 @@ public sealed class AuthService(
             PasswordHash = hasher.Hash(request.Password),
             Country = request.Country,
             Role = Titan_Project.Server.Application.Security.Roles.User,
+            TargetAbv = request.Preferences?.TargetAbv,
+            AbvTolerance = request.Preferences?.AbvTolerance,
+            MaxPrice = request.Preferences?.MaxPrice,
+            PreferredTagsJson = request.Preferences?.PreferredTags != null 
+                ? System.Text.Json.JsonSerializer.Serialize(request.Preferences.PreferredTags) 
+                : "[]",
         };
 
         try

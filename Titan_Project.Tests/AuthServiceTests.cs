@@ -180,7 +180,13 @@ public class AuthServiceTests
         public Task<bool> ExistsByUsernameAsync(string username, CancellationToken ct) =>
             Task.FromResult(UsernameExists);
 
+        public Task<bool> ExistsByUsernameAsync(string username, int excludeUserId, CancellationToken ct) =>
+            Task.FromResult(UsernameExists);
+
         public Task<bool> ExistsByEmailAsync(string email, CancellationToken ct) =>
+            Task.FromResult(EmailExists);
+
+        public Task<bool> ExistsByEmailAsync(string email, int excludeUserId, CancellationToken ct) =>
             Task.FromResult(EmailExists);
 
         public Task<User> AddAsync(User user, CancellationToken ct)
@@ -188,6 +194,24 @@ public class AuthServiceTests
             user.UserId = _nextId++;
             _users[user.UserId] = user;
             return Task.FromResult(user);
+        }
+
+        public Task<User?> UpdateAsync(User user, CancellationToken ct)
+        {
+            _users[user.UserId] = user;
+            return Task.FromResult<User?>(user);
+        }
+
+        public Task<bool> DeleteAsync(int userId, CancellationToken ct)
+        {
+            var result = _users.Remove(userId);
+            return Task.FromResult(result);
+        }
+
+        public Task<(IReadOnlyList<User> Items, int TotalCount)> ListAsync(int page, int pageSize, CancellationToken ct)
+        {
+            var items = _users.Values.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            return Task.FromResult(((IReadOnlyList<User>)items, _users.Count));
         }
     }
 

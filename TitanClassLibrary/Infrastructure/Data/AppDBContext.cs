@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Titan_Project.Server.Domain.Model;
 
 namespace Titan_Project.Server.Infrastructure.Data
@@ -20,13 +20,13 @@ namespace Titan_Project.Server.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // 1. Налаштування ієрархії продуктів (Table-Per-Type)
+
             // Map base and derived types to separate tables (TPT)
             modelBuilder.Entity<AlcoholProduct>().ToTable("AlcoholProducts");
             modelBuilder.Entity<BeerProduct>().ToTable("BeerProducts");
             modelBuilder.Entity<WineProduct>().ToTable("WineProducts");
 
-            // Налаштування базових властивостей AlcoholProduct
+
             modelBuilder.Entity<AlcoholProduct>(entity =>
             {
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
@@ -35,13 +35,13 @@ namespace Titan_Project.Server.Infrastructure.Data
                 entity.Property(e => e.Price).HasPrecision(18, 2);
                 entity.Property(e => e.Abv).HasPrecision(5, 2);
                 
-                // Налаштування нових полів зображень
+
                 entity.Property(e => e.ImageUrl).HasMaxLength(500);
                 entity.Property(e => e.ImageSourceUrl).HasMaxLength(1000);
                 entity.Property(e => e.ImageLocalPath).HasMaxLength(1000);
             });
 
-            // Налаштування специфічних полів для пива
+
             modelBuilder.Entity<BeerProduct>(entity =>
             {
                 entity.Property(e => e.Ibu).HasPrecision(5, 0);
@@ -50,7 +50,7 @@ namespace Titan_Project.Server.Infrastructure.Data
                 entity.Property(e => e.Style).IsRequired(); 
             });
 
-            // 2. Налаштування користувача (User)
+
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(u => u.UserId);
@@ -64,7 +64,7 @@ namespace Titan_Project.Server.Infrastructure.Data
                 entity.Property(e => e.MaxPrice).HasPrecision(18, 2);
                 entity.Property(u => u.PreferredTagsJson).HasMaxLength(2000);
 
-                // Налаштування зв'язку Many-to-Many для списку улюбленого (Favorites)
+
                 entity.HasMany(u => u.Favorites)
                     .WithMany(p => p.Favorites)
                     .UsingEntity<Dictionary<string, object>>(
@@ -81,23 +81,23 @@ namespace Titan_Project.Server.Infrastructure.Data
                             .OnDelete(DeleteBehavior.Cascade),
                         j => j.HasKey("UserId", "ProductId"));            });
 
-            // 3. Налаштування відгуків (Reviews)
+
             modelBuilder.Entity<Review>(entity =>
             {
                 entity.Property(e => e.Comment).HasMaxLength(1000);
                 entity.HasIndex(e => new { e.UserId, e.ProductId }).IsUnique();
 
-                // Зв'язок Відгук -> Користувач
+
                 entity.HasOne<User>()
                       .WithMany() 
                       .HasForeignKey(r => r.UserId)
-                      .OnDelete(DeleteBehavior.Cascade); // При видаленні юзера видаляються його відгуки
+                      .OnDelete(DeleteBehavior.Cascade);
 
-                // Зв'язок Відгук -> Продукт
+
                 entity.HasOne<AlcoholProduct>()
                       .WithMany() 
                       .HasForeignKey(r => r.ProductId)
-                      .OnDelete(DeleteBehavior.Cascade); // При видаленні продукту видаляються відгуки про нього
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
         }

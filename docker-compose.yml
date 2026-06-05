@@ -24,6 +24,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - titan_images:/app/wwwroot/product-images
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
       interval: 10s
@@ -43,3 +45,4 @@ services:
 
 volumes:
   titan_pgdata:
+  titan_images:

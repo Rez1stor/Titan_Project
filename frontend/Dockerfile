@@ -14,4 +14,3 @@ COPY frontend/docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /src/dist /usr/share/nginx/html
 
 EXPOSE 80
->>>>>>> 62bdb566ab1a546e74547b91809b0f9058902e62

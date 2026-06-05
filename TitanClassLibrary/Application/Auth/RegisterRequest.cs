@@ -22,4 +22,6 @@ public class RegisterRequest
 
     [MaxLength(100)]
     public string? Country { get; set; }
+
+    public Titan_Project.Server.Contracts.Users.UserPreferencesDto? Preferences { get; set; }
 }

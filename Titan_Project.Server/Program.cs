@@ -20,6 +20,11 @@ using Titan_Project.Server.Contracts.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 52428800; // 50MB
+});
+
 builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
@@ -72,11 +77,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         opts.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
             ? CookieSecurePolicy.SameAsRequest
             : CookieSecurePolicy.Always;
-        // In development ensure cookie works with local dev server (localhost)
+        // In development ensure cookie works with local dev server
         if (builder.Environment.IsDevelopment())
         {
-            opts.Cookie.Domain = "localhost";
-            opts.Cookie.SameSite = SameSiteMode.None;
+            opts.Cookie.SameSite = SameSiteMode.Lax;
         }
         else
         {
@@ -103,6 +107,8 @@ builder.Services.AddScoped<IUserRepository, DbUserRepository>();
 builder.Services.AddScoped<ICurrentUserContext, HttpContextCurrentUser>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProductQueryService, ProductQueryService>();
+builder.Services.AddScoped<TitanClassLibrary.Application.Products.IProductAdminService, TitanClassLibrary.Application.Products.ProductAdminService>();
+builder.Services.AddScoped<TitanClassLibrary.Application.Catalog.IAdminCatalogBeerService, Titan_Project.Server.Infrastructure.Catalog.AdminCatalogBeerService>();
 builder.Services.AddScoped<IProductImageStore, DbProductImageStore>();
 builder.Services.AddHttpClient<IAlcoholSeedService, OpenFoodFactsAlcoholSeedService>(client =>
 {
@@ -283,7 +289,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Автоматичне завантаження фоток для товарів без зображень
+
 if (app.Environment.IsDevelopment())
 {
     using (var scope = app.Services.CreateScope())
@@ -295,7 +301,7 @@ if (app.Environment.IsDevelopment())
 
         if (productsWithoutImages.Any())
         {
-            Console.WriteLine($"🖼️ Завантаження фоток для {productsWithoutImages.Count} товарів без зображень...");
+            Console.WriteLine($"🖼️ Downloading photos for {productsWithoutImages.Count} products without images...");
             
             var seedService = scope.ServiceProvider.GetRequiredService<IAlcoholSeedService>();
             var imageStore = scope.ServiceProvider.GetRequiredService<IProductImageStore>();
@@ -326,7 +332,6 @@ if (app.Environment.IsDevelopment())
 
             var result = await seedService.GenerateAsync(requestItems, "alcohol-seed.json", CancellationToken.None);
 
-            // Оновлюємо продукти в БД з завантаженими фотками
             foreach (var item in result.Items ?? new List<AlcoholSeedExportItemDto>())
             {
                 var product = productsWithoutImages.FirstOrDefault(p => p.ProductId == item.ProductId);
@@ -339,7 +344,7 @@ if (app.Environment.IsDevelopment())
             }
 
             await db.SaveChangesAsync();
-            Console.WriteLine($"✅ Фотки успішно завантажені для {productsWithoutImages.Count} товарів!");
+            Console.WriteLine($"✅ Photos successfully downloaded for {productsWithoutImages.Count} products!");
         }
     }
 }

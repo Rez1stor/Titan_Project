@@ -29,6 +29,7 @@ export type ProductDto = {
   wineAromas?: string[];
   beerIbu?: number;
   beerSrm?: number;
+  similarityScore?: number;
 };
 
 /** Extended DTO used in the product detail view. */

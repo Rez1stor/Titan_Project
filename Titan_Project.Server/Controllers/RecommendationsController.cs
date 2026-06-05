@@ -35,15 +35,21 @@ public class RecommendationsController(AppDBContext db, ICurrentUserContext curr
             .Select(candidate => new
             {
                 Product = candidate,
-                Score = ScoreSimilarity(baseProduct, candidate),
+                Percentage = Math.Clamp((ScoreSimilarity(baseProduct, candidate) / 110.0) * 100.0, 0, 100)
             })
-            .OrderByDescending(item => item.Score)
+            .Where(item => item.Percentage >= 50)
+            .OrderByDescending(item => item.Percentage)
             .ThenByDescending(item => item.Product.ProductId)
             .Take(10)
-            .Select(item => item.Product)
             .ToList();
+        var dtos = await productQuery.MapProductsAsync(ranked.Select(i => i.Product), CancellationToken.None);
+        foreach (var dto in dtos)
+        {
+            var rank = ranked.First(r => r.Product.ProductId == (int)dto.Id);
+            dto.SimilarityScore = Math.Round(rank.Percentage, 1);
+        }
 
-        return Ok(await productQuery.MapProductsAsync(ranked, CancellationToken.None));
+        return Ok(dtos);
     }
 
     [HttpGet("for-user")]
@@ -51,8 +57,7 @@ public class RecommendationsController(AppDBContext db, ICurrentUserContext curr
     {
         if (!currentUser.IsAuthenticated || currentUser.UserId is null)
         {
-            var top = await db.AlcoholProducts.Take(5).ToListAsync();
-            return Ok(await productQuery.MapProductsAsync(top, CancellationToken.None));
+            return Ok(Array.Empty<ProductDto>());
         }
 
         var userId = currentUser.UserId.Value;
@@ -68,10 +73,12 @@ public class RecommendationsController(AppDBContext db, ICurrentUserContext curr
                 var favCategories = favProducts
                     .Select(p => p switch
                     {
-                        BeerProduct => AlcoholCategory.Beer,
-                        WineProduct => AlcoholCategory.Wine,
-                        _ => AlcoholCategory.Other
+                        BeerProduct => (AlcoholCategory?)AlcoholCategory.Beer,
+                        WineProduct => (AlcoholCategory?)AlcoholCategory.Wine,
+                        _ => null
                     })
+                    .Where(c => c.HasValue)
+                    .Select(c => c!.Value)
                     .Distinct()
                     .ToList();
 
@@ -112,8 +119,7 @@ public class RecommendationsController(AppDBContext db, ICurrentUserContext curr
             if (recs.Count > 0) return Ok(await productQuery.MapProductsAsync(recs, CancellationToken.None));
         }
 
-        var fallback = await db.AlcoholProducts.Take(5).ToListAsync();
-        return Ok(await productQuery.MapProductsAsync(fallback, CancellationToken.None));
+        return Ok(Array.Empty<ProductDto>());
     }
 
     private static double ScoreSimilarity(AlcoholProduct baseProduct, AlcoholProduct candidate)

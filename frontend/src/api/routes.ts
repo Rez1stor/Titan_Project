@@ -10,6 +10,7 @@ export const apiRoutes = {
   products: {
     list: (query?: string) => `/api/products${query ? `?${query}` : ''}`,
     byId: (id: number | string) => `/api/products/${id}`,
+    byName: (name: string) => `/api/products/by-name/${encodeURIComponent(name)}`,
   },
   admin: {
     products: '/api/admin/products',

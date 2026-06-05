@@ -20,6 +20,12 @@ import { AUTH_CHANGED_EVENT, apiRoutes } from '../api/routes';
 import { ApiError, apiFetch, userHeaders } from '../utils/api';
 import { fetchBeerCatalogLabels, fetchWineCatalogLabels } from '../utils/catalogApi';
 
+const getBadgeColor = (score: number) => {
+  if (score >= 79) return 'bg-green-500 text-white';
+  if (score >= 50) return 'bg-yellow-500 text-yellow-900';
+  return 'bg-red-500 text-white';
+};
+
 const getStyleDescription = (
   product: ProductDetailsDto | null,
   beerCatalog: BeerCatalogResponse | null,
@@ -53,7 +59,7 @@ const getClassDescription = (
 };
 
 export default function ProductDetailsView() {
-  const { id } = useParams();
+  const { id: routeName } = useParams();
   const navigate = useNavigate();
   const [beer, setBeer] = useState<ProductDetailsDto | null>(null);
   const [similar, setSimilar] = useState<ProductDetailsDto[]>([]);
@@ -78,16 +84,19 @@ export default function ProductDetailsView() {
 
   const hasBeerDetails = beer?.beerIbu !== null && beer?.beerIbu !== undefined;
   const loadData = useCallback(() => {
-    if (!id) return;
-    void apiFetch<ProductDetailsDto>(apiRoutes.products.byId(id), { credentials: 'omit' }).then((data) => setBeer(data));
-    void apiFetch<ProductDetailsDto[]>(apiRoutes.recommendations.forProduct(id), { credentials: 'omit' }).then((data) => setSimilar(data));
-    void apiFetch<ReviewDto[]>(apiRoutes.reviews.byProductId(id), { credentials: 'omit' }).then((data) => setReviews(data));
-    void userHeaders().then((headers) =>
-      apiFetch<FavoriteDto[]>(apiRoutes.favorites.list, { headers }).then((favs) =>
-        setIsFav(favs.some((favorite) => String(favorite.id) === String(id))),
-      ),
-    );
-  }, [id]);
+    if (!routeName) return;
+    void apiFetch<ProductDetailsDto>(apiRoutes.products.byName(routeName), { credentials: 'omit' }).then((data) => {
+      setBeer(data);
+      const productId = data.id;
+      void apiFetch<ProductDetailsDto[]>(apiRoutes.recommendations.forProduct(productId), { credentials: 'omit' }).then((data) => setSimilar(data));
+      void apiFetch<ReviewDto[]>(apiRoutes.reviews.byProductId(productId), { credentials: 'omit' }).then((data) => setReviews(data));
+      void userHeaders().then((headers) =>
+        apiFetch<FavoriteDto[]>(apiRoutes.favorites.list, { headers }).then((favs) =>
+          setIsFav(favs.some((favorite) => String(favorite.id) === String(productId))),
+        ),
+      );
+    });
+  }, [routeName]);
 
   useEffect(() => {
     let isMounted = true;
@@ -221,8 +230,9 @@ export default function ProductDetailsView() {
   }, []);
 
   const toggleFavorite = async () => {
+    if (!beer) return;
     const headers = await userHeaders();
-    await apiFetch(apiRoutes.favorites.byProductId(id!), {
+    await apiFetch(apiRoutes.favorites.byProductId(beer.id), {
       method: isFav ? 'DELETE' : 'POST',
       headers,
       parseJson: false,
@@ -232,7 +242,7 @@ export default function ProductDetailsView() {
 
   const submitReview = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!currentUser || !id) {
+    if (!currentUser || !beer) {
       setReviewFeedback({ kind: 'error', message: 'Please sign in to leave a review.' });
       return;
     }
@@ -243,7 +253,7 @@ export default function ProductDetailsView() {
       await apiFetch(isEditing ? apiRoutes.reviews.byId(editingReviewId) : apiRoutes.reviews.list, {
         method: isEditing ? 'PUT' : 'POST',
         headers,
-        body: JSON.stringify({ productId: Number(id), rating, comment }),
+        body: JSON.stringify({ productId: Number(beer.id), rating, comment }),
       });
 
       setComment('');
@@ -281,16 +291,16 @@ export default function ProductDetailsView() {
     if (!currentUser || reviews.length === 0) return;
 
     const ownReview = reviews.find((review) => review.userId === currentUser.userId);
-    if (!ownReview) return;
+    if (!ownReview || !beer) return;
 
-    const autoFillKey = `${currentUser.userId}:${id}`;
+    const autoFillKey = `${currentUser.userId}:${beer.id}`;
     if (autoFilledReviewKeyRef.current === autoFillKey) return;
 
     autoFilledReviewKeyRef.current = autoFillKey;
     setEditingReviewId(ownReview.id);
     setRating(Number(ownReview.rating) || 5);
     setComment(ownReview.comment || '');
-  }, [currentUser, id, reviews]);
+  }, [currentUser, beer, reviews]);
 
   const deleteReview = async (review: ReviewDto) => {
     try {
@@ -312,10 +322,10 @@ export default function ProductDetailsView() {
   };
 
   const deleteProduct = async () => {
-    if (!id) return;
+    if (!beer) return;
 
     try {
-      await apiFetch(apiRoutes.admin.productById(id), { method: 'DELETE', parseJson: false });
+      await apiFetch(apiRoutes.admin.productById(beer.id), { method: 'DELETE', parseJson: false });
       navigate('/');
     } catch (error) {
       console.error(error);
@@ -401,7 +411,7 @@ export default function ProductDetailsView() {
                 <>
                   <button onClick={() => setDeleteDialog({ kind: 'product' })} className="bg-red-50 text-red-700 px-3.5 py-2.5 rounded-xl border border-red-400 font-bold cursor-pointer hover:bg-red-100 transition-colors">Delete</button>
 
-                  <button onClick={() => navigate(`/product/${id}/edit`)} className="bg-indigo-50 text-indigo-800 px-3.5 py-2.5 rounded-xl border border-indigo-200 font-bold cursor-pointer hover:bg-indigo-100 transition-colors">Edit</button>
+                  <button onClick={() => navigate(`/product/${beer.id}/edit`)} className="bg-indigo-50 text-indigo-800 px-3.5 py-2.5 rounded-xl border border-indigo-200 font-bold cursor-pointer hover:bg-indigo-100 transition-colors">Edit</button>
                 </>
               ) : null}
             </div>
@@ -632,7 +642,7 @@ export default function ProductDetailsView() {
               const isHovered = hoveredSimilar === String(item.id);
               return (
                 <Link
-                  to={`/product/${item.id}`}
+                  to={`/product/${encodeURIComponent(item.name)}`}
                   key={item.id}
                   onMouseEnter={() => setHoveredSimilar(String(item.id))}
                   onMouseLeave={() => setHoveredSimilar(null)}
@@ -640,7 +650,12 @@ export default function ProductDetailsView() {
                     isHovered ? '-translate-y-1.5 scale-101 shadow-[0_14px_36px_rgba(0,0,0,0.10)]' : 'shadow-none'
                   }`}
                 >
-                  <div className="h-27.5 bg-bg-main rounded-xl overflow-hidden flex items-center justify-center">
+                  <div className="h-27.5 bg-bg-main rounded-xl overflow-hidden flex items-center justify-center relative">
+                    {item.similarityScore !== undefined && (
+                      <div className={`absolute top-1.5 right-1.5 z-10 ${getBadgeColor(item.similarityScore)} text-[11px] font-extrabold px-2 py-0.5 rounded-md shadow-sm`}>
+                        {Math.round(item.similarityScore)}% Match
+                      </div>
+                    )}
                     {src ? (
                       <img src={src} alt={item.name} className="max-w-full max-h-full object-contain block" />
                     ) : (

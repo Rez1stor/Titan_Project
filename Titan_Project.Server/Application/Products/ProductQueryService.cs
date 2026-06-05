@@ -62,6 +62,18 @@ public sealed class ProductQueryService(AppDBContext db, IProductImageStore imag
         return ProductDtoMapper.Map(product, avgRating, reviewsCount, imageStore);
     }
 
+    public async Task<ProductDto?> GetByNameAsync(string name, CancellationToken ct)
+    {
+        var product = await db.AlcoholProducts.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower(), ct);
+        if (product is null)
+            return null;
+
+        var (avgRatings, reviewCounts) = await ReviewStatsQuery.GetForProductsAsync(db, [product.ProductId], ct);
+        avgRatings.TryGetValue(product.ProductId, out var avgRating);
+        reviewCounts.TryGetValue(product.ProductId, out var reviewsCount);
+        return ProductDtoMapper.Map(product, avgRating, reviewsCount, imageStore);
+    }
+
     public async Task<IReadOnlyList<ProductDto>> MapProductsAsync(IEnumerable<AlcoholProduct> products, CancellationToken ct)
     {
         var list = products.ToList();
@@ -107,7 +119,6 @@ public sealed class ProductQueryService(AppDBContext db, IProductImageStore imag
         {
             "beer" => query.OfType<BeerProduct>(),
             "wine" => query.OfType<WineProduct>(),
-            "other" => query.Where(p => p.Category == AlcoholCategory.Other),
             _ => query,
         };
     }
