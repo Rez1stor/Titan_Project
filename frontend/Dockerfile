@@ -26,4 +26,7 @@ COPY frontend/docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /src/dist /usr/share/nginx/html
 
 EXPOSE 80
+<<<<<<< HEAD
 >>>>>>> 62bdb56 (chore: add Docker Compose stack and AuthService unit tests)
+=======
+>>>>>>> 64c12ac (feat: add user preferences, recommendations feed, and fix docker image uploads)

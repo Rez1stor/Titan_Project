@@ -1,14 +1,16 @@
-export type AlcoholCategory = 'All' | 'Beer' | 'Wine' | 'Spirits' | 'Cocktails';
+import { AlcoholCategoryOptions } from '../types/generatedEnums';
+
+export type AlcoholCategory = 'All' | typeof AlcoholCategoryOptions[number];
 export type PriceBand = 'Any' | 'Budget' | 'Classic' | 'Premium' | 'Luxury';
 
 export type AlcoholProfile = {
-  category: AlcoholCategory;
-  primaryChoice: string;
-  secondaryChoice: string;
+  categories: AlcoholCategory[];
+  primaryChoices: string[];
+  secondaryChoices: string[];
   color: number;
   bitterness: number;
   strength: number;
-  priceBand: PriceBand;
+  priceBands: PriceBand[];
 };
 
 export type ProductLike = {
@@ -33,7 +35,7 @@ export type CategoryControl =
       kind: 'select';
       id: string;
       label: string;
-      valueKey: 'primaryChoice' | 'secondaryChoice' | 'priceBand';
+      valueKey: 'primaryChoices' | 'secondaryChoices' | 'priceBands';
       options: ControlOption[];
       helperText?: string;
     }
@@ -62,7 +64,7 @@ export type CategoryDefinition = {
 
 export const STORAGE_KEY = 'titan-alcohol-profile';
 
-export const alcoholCategories: AlcoholCategory[] = ['All', 'Beer', 'Wine', 'Spirits', 'Cocktails'];
+export const alcoholCategories: AlcoholCategory[] = ['All', ...AlcoholCategoryOptions];
 
 export const priceBands: Array<{ label: string; value: PriceBand; hint: string }> = [
   { label: 'Any', value: 'Any', hint: 'show everything' },
@@ -73,13 +75,13 @@ export const priceBands: Array<{ label: string; value: PriceBand; hint: string }
 ];
 
 export const defaultAlcoholProfile: AlcoholProfile = {
-  category: 'All',
-  primaryChoice: '',
-  secondaryChoice: '',
+  categories: ['All'],
+  primaryChoices: [],
+  secondaryChoices: [],
   color: 22,
   bitterness: 40,
   strength: 5,
-  priceBand: 'Any',
+  priceBands: ['Any'],
 };
 
 import {
@@ -88,13 +90,6 @@ import {
   WINE_COLOR_OPTIONS,
   WINE_STYLE_OPTIONS,
 } from './alcoholOptions';
-
-const genericOptions: ControlOption[] = [
-  { label: 'Classic', value: 'Classic' },
-  { label: 'Dry', value: 'Dry' },
-  { label: 'Balanced', value: 'Balanced' },
-  { label: 'Bold', value: 'Bold' },
-];
 
 export const categoryDefinitions: Record<AlcoholCategory, CategoryDefinition> = {
   All: {
@@ -114,7 +109,7 @@ export const categoryDefinitions: Record<AlcoholCategory, CategoryDefinition> = 
         kind: 'select',
         id: 'primaryChoice',
         label: 'Style family',
-        valueKey: 'primaryChoice',
+        valueKey: 'primaryChoices',
         options: BEER_STYLE_FAMILIES,
         helperText: 'Choose the beer family first.',
       },
@@ -122,7 +117,7 @@ export const categoryDefinitions: Record<AlcoholCategory, CategoryDefinition> = 
         kind: 'select',
         id: 'secondaryChoice',
         label: 'Class',
-        valueKey: 'secondaryChoice',
+        valueKey: 'secondaryChoices',
         options: BEER_CLASS_OPTIONS,
         helperText: 'Pick the color class you want to see.',
       },
@@ -173,7 +168,7 @@ export const categoryDefinitions: Record<AlcoholCategory, CategoryDefinition> = 
         kind: 'select',
         id: 'primaryChoice',
         label: 'Style',
-        valueKey: 'primaryChoice',
+        valueKey: 'primaryChoices',
         options: WINE_STYLE_OPTIONS,
         helperText: 'Pick the wine style.',
       },
@@ -181,7 +176,7 @@ export const categoryDefinitions: Record<AlcoholCategory, CategoryDefinition> = 
         kind: 'select',
         id: 'secondaryChoice',
         label: 'Color',
-        valueKey: 'secondaryChoice',
+        valueKey: 'secondaryChoices',
         options: WINE_COLOR_OPTIONS,
         helperText: 'Pick the wine color.',
       },
@@ -204,82 +199,20 @@ export const categoryDefinitions: Record<AlcoholCategory, CategoryDefinition> = 
       },
     ],
   },
-  Spirits: {
-    id: 'Spirits',
-    title: 'Spirits',
-    description: 'Future-ready category slot for spirits with scalable controls.',
-    supported: false,
-    controls: [
-      {
-        kind: 'select',
-        id: 'primaryChoice',
-        label: 'Style',
-        valueKey: 'primaryChoice',
-        options: genericOptions,
-        helperText: 'Ready for future spirits data.',
-      },
-      {
-        kind: 'range',
-        id: 'strength',
-        label: 'Intensity',
-        valueKey: 'strength',
-        min: 0,
-        max: 100,
-        step: 1,
-        leftLabel: 'Smooth',
-        rightLabel: 'Strong',
-        marks: [
-          { label: 'Low', value: 20 },
-          { label: 'Mid', value: 50 },
-          { label: 'High', value: 80 },
-        ],
-        helperText: 'Ready for future spirits data.',
-      },
-    ],
-  },
-  Cocktails: {
-    id: 'Cocktails',
-    title: 'Cocktails',
-    description: 'Future-ready category slot for cocktails with scalable controls.',
-    supported: false,
-    controls: [
-      {
-        kind: 'select',
-        id: 'primaryChoice',
-        label: 'Style',
-        valueKey: 'primaryChoice',
-        options: genericOptions,
-        helperText: 'Ready for future cocktail data.',
-      },
-      {
-        kind: 'range',
-        id: 'strength',
-        label: 'Freshness',
-        valueKey: 'strength',
-        min: 0,
-        max: 100,
-        step: 1,
-        leftLabel: 'Soft',
-        rightLabel: 'Bold',
-        marks: [
-          { label: 'Low', value: 20 },
-          { label: 'Mid', value: 50 },
-          { label: 'High', value: 80 },
-        ],
-        helperText: 'Ready for future cocktail data.',
-      },
-    ],
-  },
 };
 
-export const categoryOrder: AlcoholCategory[] = ['Beer', 'Wine', 'Spirits', 'Cocktails'];
+export const categoryOrder: AlcoholCategory[] = ['Beer', 'Wine'];
 
 export function getCategoryDefinition(category: AlcoholCategory) {
   return categoryDefinitions[category];
 }
 
 export function describeProfile(profile: AlcoholProfile) {
-  return `${profile.category} • ${profile.priceBand} • ${profile.primaryChoice || 'any style'} • ${profile.secondaryChoice || 'any class'}`;
+  const cats = profile.categories.length ? profile.categories.join(', ') : 'All';
+  const prices = profile.priceBands.length ? profile.priceBands.join(', ') : 'Any';
+  const prims = profile.primaryChoices.length ? profile.primaryChoices.join(', ') : 'any style';
+  const secs = profile.secondaryChoices.length ? profile.secondaryChoices.join(', ') : 'any class';
+  return `${cats} • ${prices} • ${prims} • ${secs}`;
 }
 
 export function isSupportedCategory(category: AlcoholCategory) {
@@ -291,29 +224,29 @@ export function normalizeCategoryName(value?: string | null): AlcoholCategory | 
 
   if (normalized === 'beer') return 'Beer';
   if (normalized === 'wine') return 'Wine';
-  if (normalized === 'spirits') return 'Spirits';
-  if (normalized === 'cocktails') return 'Cocktails';
   if (normalized === 'all') return 'All';
   return null;
 }
 
-export function matchesCategory(product: ProductLike, category: AlcoholCategory) {
-  if (category === 'All') {
+export function matchesCategory(product: ProductLike, categories: AlcoholCategory[]) {
+  if (categories.length === 0 || categories.includes('All')) {
     return true;
   }
 
-  return product.categoryName.toLowerCase() === category.toLowerCase();
+  return categories.some((c) => product.categoryName.toLowerCase() === c.toLowerCase());
 }
 
-export function matchesPrice(price: number | undefined, band: PriceBand) {
-  if (band === 'Any' || price === undefined || price === null) {
+export function matchesPrice(price: number | undefined, bands: PriceBand[]) {
+  if (bands.length === 0 || bands.includes('Any') || price === undefined || price === null) {
     return true;
   }
 
-  if (band === 'Budget') return price <= 25;
-  if (band === 'Classic') return price > 25 && price <= 40;
-  if (band === 'Premium') return price > 40 && price <= 70;
-  return price > 70;
+  return bands.some((band) => {
+    if (band === 'Budget') return price <= 25;
+    if (band === 'Classic') return price > 25 && price <= 40;
+    if (band === 'Premium') return price > 40 && price <= 70;
+    return price > 70;
+  });
 }
 
 export function matchesTaste(product: ProductLike, profile: AlcoholProfile) {
@@ -331,8 +264,8 @@ export function matchesTaste(product: ProductLike, profile: AlcoholProfile) {
 
 export function scoreProduct(product: ProductLike, profile: AlcoholProfile) {
   const metrics = getProductMetrics(product);
-  const categoryBonus = matchesCategory(product, profile.category) ? 60 : 0;
-  const priceScore = profile.priceBand === 'Any' ? 15 : matchesPrice(product.basePrice, profile.priceBand) ? 30 : -20;
+  const categoryBonus = matchesCategory(product, profile.categories) ? 60 : 0;
+  const priceScore = profile.priceBands.includes('Any') ? 15 : matchesPrice(product.basePrice, profile.priceBands) ? 30 : -20;
   const detailBonus = matchesTasteDetail(product, profile) ? 20 : -15;
 
   return (
@@ -356,32 +289,35 @@ export function getProductMetrics(product: ProductLike) {
 }
 
 function matchesCategoryDetail(product: ProductLike, profile: AlcoholProfile, category: string) {
-  if (profile.category === 'Beer') {
+  if (category === 'beer') {
     const text = `${product.beerStyle ?? ''} ${product.name ?? ''} ${product.beerColor ?? ''}`.toLowerCase();
-    const primary = profile.primaryChoice ? text.includes(profile.primaryChoice.toLowerCase()) : true;
-    const secondary = profile.secondaryChoice ? text.includes(profile.secondaryChoice.toLowerCase()) : true;
-    return category === 'beer' ? primary && secondary : false;
+    const primary = profile.primaryChoices.length > 0 ? profile.primaryChoices.some((c) => text.includes(c.toLowerCase())) : true;
+    const secondary = profile.secondaryChoices.length > 0 ? profile.secondaryChoices.some((c) => text.includes(c.toLowerCase())) : true;
+    return primary && secondary;
   }
 
-  if (profile.category === 'Wine') {
+  if (category === 'wine') {
     const text = `${product.wineStyle ?? ''} ${product.name ?? ''} ${product.wineColor ?? ''}`.toLowerCase();
-    const primary = profile.primaryChoice ? text.includes(profile.primaryChoice.toLowerCase()) : true;
-    const secondary = profile.secondaryChoice ? text.includes(profile.secondaryChoice.toLowerCase()) : true;
-    return category === 'wine' ? primary && secondary : false;
+    const primary = profile.primaryChoices.length > 0 ? profile.primaryChoices.some((c) => text.includes(c.toLowerCase())) : true;
+    const secondary = profile.secondaryChoices.length > 0 ? profile.secondaryChoices.some((c) => text.includes(c.toLowerCase())) : true;
+    return primary && secondary;
   }
 
   return true;
 }
 
 function matchesTasteDetail(product: ProductLike, profile: AlcoholProfile) {
-  if (profile.category === 'Beer') {
+  const category = product.categoryName.toLowerCase();
+  if (category === 'beer') {
     const text = `${product.beerStyle ?? ''} ${product.beerColor ?? ''}`.toLowerCase();
-    return (!profile.primaryChoice || text.includes(profile.primaryChoice.toLowerCase())) && (!profile.secondaryChoice || text.includes(profile.secondaryChoice.toLowerCase()));
+    return (profile.primaryChoices.length === 0 || profile.primaryChoices.some((c) => text.includes(c.toLowerCase()))) && 
+           (profile.secondaryChoices.length === 0 || profile.secondaryChoices.some((c) => text.includes(c.toLowerCase())));
   }
 
-  if (profile.category === 'Wine') {
+  if (category === 'wine') {
     const text = `${product.wineStyle ?? ''} ${product.wineColor ?? ''}`.toLowerCase();
-    return (!profile.primaryChoice || text.includes(profile.primaryChoice.toLowerCase())) && (!profile.secondaryChoice || text.includes(profile.secondaryChoice.toLowerCase()));
+    return (profile.primaryChoices.length === 0 || profile.primaryChoices.some((c) => text.includes(c.toLowerCase()))) && 
+           (profile.secondaryChoices.length === 0 || profile.secondaryChoices.some((c) => text.includes(c.toLowerCase())));
   }
 
   return true;

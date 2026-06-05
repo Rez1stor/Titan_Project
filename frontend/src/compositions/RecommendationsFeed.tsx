@@ -61,9 +61,14 @@ const isInPreferenceWindow = (product: ProductDto, preferences?: UserPreferences
   return true;
 };
 
-function SectionCard({ title, description, icon, products, emptyMessage, onToggleFavorite, cardWidth }: RecommendationSection & { onToggleFavorite?: (productId: number | string) => void; cardWidth: number }) {
-  // Render all products in a horizontally scrollable row. The `cardWidth` is
-  // computed by the parent so the visible viewport contains whole cards only.
+type SectionCardProps = RecommendationSection & {
+  onToggleFavorite: (productId: number | string) => void;
+  cardWidth: number;
+  favoriteIds: string[];
+};
+
+function SectionCard({ title, description, icon, products, emptyMessage, onToggleFavorite, cardWidth, favoriteIds }: SectionCardProps) {
+  // Only show up to 10 items in a section to avoid horizontal scroll fatiguerds only.
   const visibleProducts = products;
 
   return (
@@ -79,7 +84,7 @@ function SectionCard({ title, description, icon, products, emptyMessage, onToggl
         <div className="flex gap-[20px] overflow-x-auto pb-2 snap-x snap-mandatory min-w-0" style={{ WebkitOverflowScrolling: 'touch' }}>
           {visibleProducts.map((item) => (
             <div key={item.id} className="flex self-stretch" style={{ flex: `0 0 ${cardWidth}px`, width: cardWidth, minWidth: cardWidth, maxWidth: cardWidth, scrollSnapAlign: 'start' }}>
-              <ProductCard product={item} onToggleFavorite={onToggleFavorite} />
+              <ProductCard product={item} isFavorited={favoriteIds.includes(String(item.id))} onToggleFavorite={onToggleFavorite} />
             </div>
           ))}
         </div>
@@ -126,9 +131,10 @@ export default function RecommendationsFeed() {
 
         const popular = [...allProducts]
           .sort((left, right) => {
-            const leftPrice = Number(left.basePrice ?? 0);
-            const rightPrice = Number(right.basePrice ?? 0);
-            return leftPrice - rightPrice; // sort by price ascending
+            const leftRating = Number(left.avgRating ?? 0);
+            const rightRating = Number(right.avgRating ?? 0);
+            if (rightRating !== leftRating) return rightRating - leftRating; // primary: avg rating desc
+            return Number(right.reviewsCount ?? 0) - Number(left.reviewsCount ?? 0); // tie: reviews count desc
           });
 
         setLikedBasedItems(likedRecommendations);
@@ -240,7 +246,7 @@ export default function RecommendationsFeed() {
 
       <div ref={sectionsContainerRef} className="grid gap-7">
         {sections.map(({ id, ...section }) => (
-          <SectionCard key={id} id={id} {...section} onToggleFavorite={toggleFavorite} cardWidth={cardWidth} />
+          <SectionCard key={id} id={id} {...section} onToggleFavorite={toggleFavorite} cardWidth={cardWidth} favoriteIds={favoriteIds} />
         ))}
       </div>
     </div>

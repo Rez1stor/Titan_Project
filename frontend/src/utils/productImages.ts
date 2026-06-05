@@ -21,6 +21,11 @@ export function resolveProductImageSrc(imageUrl?: string | null) {
   if (!imageUrl) return undefined;
   if (/^https?:\/\//i.test(imageUrl)) return imageUrl;
 
+  if (import.meta.env.PROD) {
+    const path = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
+    return encodeURI(path);
+  }
+
   const apiBase = (import.meta.env.VITE_API_BASE as string | undefined) ?? 'http://127.0.0.1:5542';
   const base = apiBase.replace(/\/+$/, '');
   const path = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;

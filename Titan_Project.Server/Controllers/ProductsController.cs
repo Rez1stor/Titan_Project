@@ -60,4 +60,11 @@ public class ProductsController(IProductQueryService products) : ControllerBase
         var product = await products.GetByIdAsync(id, ct);
         return product is null ? NotFound() : Ok(product);
     }
+
+    [HttpGet("by-name/{name}")]
+    public async Task<ActionResult<ProductDto>> GetProductByName(string name, CancellationToken ct)
+    {
+        var product = await products.GetByNameAsync(name, ct);
+        return product is null ? NotFound() : Ok(product);
+    }
 }

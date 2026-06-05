@@ -1,8 +1,13 @@
-import { useLayoutEffect, useRef, useState } from 'react';
 import { Heart, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { ProductDto } from '../types';
 import { resolveProductImageSrc } from '../utils/productImages';
+
+const getBadgeColor = (score: number) => {
+  if (score >= 79) return 'bg-green-500';
+  if (score >= 50) return 'bg-yellow-500 text-yellow-900';
+  return 'bg-red-500';
+};
 
 type ProductCardProps = {
   product: ProductDto;
@@ -35,79 +40,13 @@ export default function ProductCard({
   const styleLabel = formatValue(product.beerStyle ?? product.wineStyle);
   const classLabel = formatValue(product.beerColor ?? product.wineColor);
   const imageSrc = resolveProductImageSrc(product.imageUrl);
-  const descriptionRef = useRef<HTMLParagraphElement | null>(null);
-  const [visibleDescription, setVisibleDescription] = useState(product.description ?? '');
-
-  useLayoutEffect(() => {
-    const element = descriptionRef.current;
-    if (!element) return;
-
-    const fullText = product.description ?? '';
-    const words = fullText.trim().split(/\s+/).filter(Boolean);
-    if (words.length === 0) {
-      setVisibleDescription('');
-      return;
-    }
-
-    const availableWidth = element.clientWidth;
-    if (availableWidth <= 0) return;
-
-    const style = window.getComputedStyle(element);
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    if (!context) return;
-
-    context.font = `${style.fontStyle} ${style.fontVariant} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-
-    const measure = (text: string) => context.measureText(text).width;
-    const lines: string[] = [];
-    let currentLine = '';
-
-    for (let index = 0; index < words.length; index += 1) {
-      const word = words[index];
-      const candidate = currentLine ? `${currentLine} ${word}` : word;
-
-      if (measure(candidate) <= availableWidth) {
-        currentLine = candidate;
-        continue;
-      }
-
-      if (currentLine) {
-        lines.push(currentLine);
-      }
-
-      currentLine = word;
-
-      if (lines.length === 2) {
-        setVisibleDescription(`${lines.slice(0, 2).join(' ')}...`);
-        return;
-      }
-
-      if (measure(currentLine) > availableWidth) {
-        // Very long single word: keep it and truncate visually by the browser.
-        lines.push(currentLine);
-        currentLine = '';
-      }
-    }
-
-    if (currentLine) {
-      lines.push(currentLine);
-    }
-
-    if (lines.length <= 2) {
-      setVisibleDescription(fullText);
-      return;
-    }
-
-    setVisibleDescription(`${lines.slice(0, 2).join(' ')}...`);
-  }, [product.description]);
 
   return (
     <div
       role="button"
       tabIndex={0}
-      onClick={() => navigate(`/product/${product.id}`)}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate(`/product/${product.id}`); }}
+      onClick={() => navigate(`/product/${encodeURIComponent(product.name)}`)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate(`/product/${encodeURIComponent(product.name)}`); }}
       className="bg-bg-card rounded-[28px] w-full h-full p-6 flex flex-col shadow-[0_14px_32px_rgba(93,64,55,0.06)] border border-gray-100 transition-all duration-200 ease-out hover:-translate-y-2 hover:scale-[1.01] hover:shadow-[0_26px_56px_rgba(93,64,55,0.12)] cursor-pointer group"
     >
       <div className="aspect-4/3 w-full bg-bg-main rounded-2xl mb-5 flex items-center justify-center relative overflow-hidden min-h-45">
@@ -155,8 +94,8 @@ export default function ProductCard({
         <span className="text-gray-400">({product.reviewsCount || 0} {reviewsLabel})</span>
       </div>
 
-      <p ref={descriptionRef} className="text-gray-500 text-base leading-relaxed mb-6 grow overflow-hidden">
-        {visibleDescription}
+      <p className="text-gray-500 text-base leading-relaxed mb-6 grow overflow-hidden line-clamp-2">
+        {product.description || ''}
       </p>
 
       <div className="grid grid-cols-2 gap-3 mb-4.5">
@@ -184,7 +123,12 @@ export default function ProductCard({
           <div className="flex gap-3 overflow-x-auto pb-1.5 scrollbar-hide">
             {recommendedProducts.map(r => (
               <div key={r.id} className="min-w-35 flex-none bg-white rounded-xl p-2 border border-gray-100 flex flex-col items-center">
-                <div className="w-full h-22.5 rounded-lg overflow-hidden flex items-center justify-center bg-bg-main">
+                <div className="w-full h-22.5 rounded-lg overflow-hidden flex items-center justify-center bg-bg-main relative">
+                  {r.similarityScore !== undefined && (
+                    <div className={`absolute top-1 right-1 z-10 ${getBadgeColor(r.similarityScore)} text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-md shadow-sm`}>
+                      {Math.round(r.similarityScore)}%
+                    </div>
+                  )}
                   {resolveProductImageSrc(r.imageUrl) ? <img src={resolveProductImageSrc(r.imageUrl)} alt={r.name} className="max-w-full max-h-full object-contain block" /> : <div className="text-2xl">🖼️</div>}
                 </div>
                 <div className="mt-2 font-bold text-center text-sm">{r.name}</div>

@@ -5,6 +5,5 @@ public enum BeerColor
     Dark = 1,
     Amber = 2,
     Pale = 3,
-    Light = 4,
-    other = 99
+    Brown = 4
 }

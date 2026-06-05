@@ -25,7 +25,8 @@ public sealed class DbProductImageStore : IProductImageStore
         if (!string.IsNullOrWhiteSpace(item.ImageLocalPath))
         {
             // Use the actual file name from the local path so URLs match stored files
-            return $"/product-images/{Path.GetFileName(item.ImageLocalPath)}";
+            var fileName = item.ImageLocalPath.Replace('\\', '/').Split('/').Last();
+            return $"/product-images/{fileName}";
         }
 
         return item.ImageUrl;
@@ -67,5 +68,5 @@ public sealed class DbProductImageStore : IProductImageStore
     private static string? GetPublicUrlFromLocalPath(string? localPath)
         => string.IsNullOrWhiteSpace(localPath)
             ? null
-            : $"/product-images/{Path.GetFileName(localPath).Replace(' ', '-')}";
+            : $"/product-images/{localPath.Replace('\\', '/').Split('/').Last().Replace(' ', '-')}";
 }

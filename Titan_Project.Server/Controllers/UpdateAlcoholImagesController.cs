@@ -35,7 +35,7 @@ public sealed class UpdateAlcoholImagesController : ControllerBase
     }
 
     /// <summary>
-    /// Завантажує фотки для товарів одного стилю
+    /// Downloads photos for products of a specific style
     /// </summary>
     [HttpPost("update-by-style")]
     public async Task<ActionResult<object>> UpdateImagesByStyle([FromBody] UpdateImagesRequestDto request, CancellationToken cancellationToken)
@@ -64,7 +64,7 @@ public sealed class UpdateAlcoholImagesController : ControllerBase
     }
 
     /// <summary>
-    /// Завантажує фотки для всіх товарів без зображень
+    /// Downloads photos for all products without images
     /// </summary>
     [HttpPost("update-all")]
     public async Task<ActionResult<object>> UpdateAllImages([FromQuery] string? imageStyle, CancellationToken cancellationToken)

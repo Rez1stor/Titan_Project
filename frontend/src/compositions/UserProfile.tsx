@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Pencil } from 'lucide-react';
-import type { PublicUserProfileDto } from '../types';
+import { Pencil, Settings } from 'lucide-react';
+import type { PublicUserProfileDto, UserPreferences, LibraryResponse } from '../types';
+import UserSettingsModal from '../components/UserSettingsModal';
+import PreferenceModal from '../components/PreferenceModal';
 import { isAdminRole } from '../types';
 import { avatarOptions, getAvatarStorageKey, pickAvatar, type AvatarChoice } from '../utils/avatar';
 import { apiRoutes, notifyAuthChanged } from '../api/routes';
@@ -16,6 +18,9 @@ export default function UserProfile() {
   const [avatarChoice, setAvatarChoice] = useState<AvatarChoice | null>(null);
   const [avatarDraftChoice, setAvatarDraftChoice] = useState<AvatarChoice | null>(null);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
+  const [preferenceModalOpen, setPreferenceModalOpen] = useState(false);
   const isOwnProfile = !id;
 
   useEffect(() => {
@@ -33,6 +38,13 @@ export default function UserProfile() {
         const data = await apiFetch<PublicUserProfileDto>(apiRoutes.auth.me);
         if (!active) return;
         setUser(data);
+
+        try {
+          const lib = await apiFetch<LibraryResponse>(apiRoutes.library);
+          if (active) setPreferences(lib.preferences ?? null);
+        } catch {
+          // ignore error fetching library
+        }
       } catch {
         if (active) setUser(null);
       }
@@ -187,15 +199,29 @@ export default function UserProfile() {
               </div>
             )}
           </div>
-          <div>
-            <div className="text-[#A0522D] uppercase tracking-widest font-black text-xs">{isOwnProfile ? 'My Profile' : 'User Profile'}</div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="my-2 text-[2.2rem] text-text-main leading-none font-bold">{user.username}</h1>
-              {roleLabel && (
-                <span className="inline-flex items-center px-2.5 py-1.5 rounded-full bg-text-main text-orange-50 text-xs font-extrabold tracking-wide uppercase">{roleLabel}</span>
+          <div className="flex-1">
+            <div className="flex justify-between items-center gap-4">
+              <div>
+                <div className="text-[#A0522D] uppercase tracking-widest font-black text-xs">{isOwnProfile ? 'My Profile' : 'User Profile'}</div>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h1 className="my-2 text-[2.2rem] text-text-main leading-none font-bold">{user.username}</h1>
+                  {roleLabel && (
+                    <span className="inline-flex items-center px-2.5 py-1.5 rounded-full bg-text-main text-orange-50 text-xs font-extrabold tracking-wide uppercase">{roleLabel}</span>
+                  )}
+                </div>
+                <div className="text-gray-500">{user.email}</div>
+              </div>
+              {isOwnProfile && (
+                <button
+                  type="button"
+                  onClick={() => setSettingsOpen(true)}
+                  className="p-2.5 rounded-full bg-[#FAF8F5] border border-[#EBDCC8] text-brand-color cursor-pointer hover:bg-[#EFE2D0] transition-colors"
+                  aria-label="Profile settings"
+                >
+                  <Settings size={20} />
+                </button>
               )}
             </div>
-            <div className="text-gray-500">{user.email}</div>
           </div>
         </div>
 
@@ -218,7 +244,70 @@ export default function UserProfile() {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-3 mt-6">
+        {isOwnProfile && preferences && (preferences.targetAbv || preferences.preferredTags?.length) && (
+          <div className="mt-8 pt-6 border-t border-[#EFE2D0]">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="m-0 text-[1.4rem] font-bold text-text-main">My Preferences</h2>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPreferenceModalOpen(true)}
+                  className="px-3.5 py-1.5 rounded-lg border border-[#EBDCC8] bg-white text-brand-color text-sm font-bold cursor-pointer hover:bg-orange-50 transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await apiFetch(apiRoutes.library + '/prefs', {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ targetAbv: null, abvTolerance: null, maxPrice: null, preferredTags: [] })
+                    });
+                    setPreferences(null);
+                  }}
+                  className="px-3.5 py-1.5 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-bold cursor-pointer hover:bg-red-100 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {preferences.targetAbv && (
+                <span className="px-3 py-1 bg-white border border-[#EBDCC8] rounded-full text-sm font-bold text-brand-color">
+                  Strength: ~{preferences.targetAbv}%
+                </span>
+              )}
+              {preferences.maxPrice && (
+                <span className="px-3 py-1 bg-white border border-[#EBDCC8] rounded-full text-sm font-bold text-brand-color">
+                  Max Price: {preferences.maxPrice} PLN
+                </span>
+              )}
+              {preferences.preferredTags?.map(tag => (
+                <span key={tag} className="px-3 py-1 bg-orange-100 border border-orange-200 rounded-full text-sm font-bold text-amber-800">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        {!preferences?.targetAbv && isOwnProfile && (
+          <div className="mt-8 pt-6 border-t border-[#EFE2D0]">
+            <div className="flex justify-between items-center">
+              <h2 className="m-0 text-[1.4rem] font-bold text-text-main">My Preferences</h2>
+              <button
+                type="button"
+                onClick={() => setPreferenceModalOpen(true)}
+                className="px-3.5 py-1.5 rounded-lg border border-brand-color bg-brand-color text-white text-sm font-bold cursor-pointer hover:bg-opacity-90 transition-colors"
+              >
+                Set up
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mt-2 mb-0">Set your alcohol preferences to get personalized recommendations.</p>
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-3 mt-8">
           {isOwnProfile && (
             <button
               type="button"
@@ -233,6 +322,53 @@ export default function UserProfile() {
           {isOwnProfile && <button type="button" onClick={handleLogout} className="px-4.5 py-3 rounded-2xl bg-red-50 text-red-700 border border-red-300 font-extrabold cursor-pointer hover:bg-red-100 transition-colors">Logout</button>}
         </div>
       </div>
+
+      {isOwnProfile && settingsOpen && (
+        <UserSettingsModal
+          user={user}
+          onClose={() => setSettingsOpen(false)}
+          onSuccess={(updatedUser) => {
+            setUser(updatedUser);
+            setSettingsOpen(false);
+          }}
+        />
+      )}
+
+      {preferenceModalOpen && (
+        <PreferenceModal
+          onSave={async (profile) => {
+            const tags = [
+              ...profile.categories,
+              ...profile.primaryChoices,
+              ...profile.secondaryChoices
+            ].filter(t => t !== 'All' && t.trim() !== '');
+
+            let maxPrice: number | null = null;
+            if (profile.priceBands.includes('Budget')) maxPrice = 25;
+            if (profile.priceBands.includes('Classic')) maxPrice = 40;
+            if (profile.priceBands.includes('Premium')) maxPrice = 70;
+            if (profile.priceBands.includes('Luxury')) maxPrice = 1000;
+            if (profile.priceBands.includes('Any')) maxPrice = null;
+
+            const prefs: UserPreferences = {
+              targetAbv: profile.strength,
+              abvTolerance: 3.5,
+              maxPrice,
+              preferredTags: tags
+            };
+
+            await apiFetch(apiRoutes.library + '/prefs', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(prefs)
+            });
+
+            setPreferences(prefs);
+            setPreferenceModalOpen(false);
+          }}
+          onSkip={() => setPreferenceModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

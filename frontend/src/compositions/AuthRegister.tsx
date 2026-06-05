@@ -6,9 +6,10 @@ import Button from '../components/Button';
 import SelectField from '../components/alcohol/SelectField';
 import FormCard from '../components/FormCard';
 import Notification from '../components/Notification';
+import PreferenceModal from '../components/PreferenceModal';
 import { countries } from '../utils/countries';
 import { STORAGE_KEY, describeProfile, type AlcoholProfile } from '../utils/alcoholProfiles';
-import { apiRoutes } from '../api/routes';
+import { apiRoutes, notifyAuthChanged } from '../api/routes';
 import { ApiError, apiFetch } from '../utils/api';
 
 export default function AuthRegister() {
@@ -19,6 +20,7 @@ export default function AuthRegister() {
   const [savedProfile, setSavedProfile] = useState<AlcoholProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,17 +37,50 @@ export default function AuthRegister() {
     }
   }, []);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegister = async (profileToSave?: AlcoholProfile) => {
     setError(null);
     setLoading(true);
     try {
+      let preferences = undefined;
+      if (profileToSave) {
+        const tags = [
+          ...profileToSave.categories,
+          ...profileToSave.primaryChoices,
+          ...profileToSave.secondaryChoices
+        ].filter(t => t !== 'All' && t.trim() !== '');
+
+        let maxPrice: number | null = null;
+        if (profileToSave.priceBands.includes('Budget')) maxPrice = 25;
+        if (profileToSave.priceBands.includes('Classic')) maxPrice = 40;
+        if (profileToSave.priceBands.includes('Premium')) maxPrice = 70;
+        if (profileToSave.priceBands.includes('Luxury')) maxPrice = 1000;
+        if (profileToSave.priceBands.includes('Any')) maxPrice = null;
+
+        preferences = {
+          TargetAbv: profileToSave.strength,
+          AbvTolerance: 3.5,
+          MaxPrice: maxPrice,
+          PreferredTags: tags
+        };
+      }
+
       await apiFetch(apiRoutes.auth.register, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ Username: username, Email: email, Password: password, Country: country || null }),
+        body: JSON.stringify({ 
+          Username: username, 
+          Email: email, 
+          Password: password, 
+          Country: country || null,
+          Preferences: preferences
+        }),
       });
 
+      if (profileToSave) {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profileToSave));
+      }
+
+      notifyAuthChanged();
       navigate('/');
     } catch (err) {
       console.error(err);
@@ -53,6 +88,22 @@ export default function AuthRegister() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!username || !email || !password) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    if (!savedProfile) {
+      setShowModal(true);
+      return;
+    }
+
+    await handleRegister(savedProfile);
   };
 
   return (
@@ -96,6 +147,19 @@ export default function AuthRegister() {
           </div>
         </form>
       </FormCard>
+
+      {showModal && (
+        <PreferenceModal
+          onSave={(profile) => {
+            setShowModal(false);
+            handleRegister(profile);
+          }}
+          onSkip={() => {
+            setShowModal(false);
+            handleRegister();
+          }}
+        />
+      )}
     </div>
   );
 }

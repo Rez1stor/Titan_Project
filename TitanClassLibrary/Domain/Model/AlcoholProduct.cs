@@ -84,7 +84,7 @@ public abstract class AlcoholProduct
         }
     }
 
-    // Нові властивості для зберігання посилань та файлів
+
     public string? ImageUrl { get; set; }
     public string? ImageSourceUrl { get; set; }
     public string? ImageLocalPath { get; set; }

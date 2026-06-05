@@ -14,6 +14,7 @@ public class ProductDto
 	public string? Description { get; set; }
 	public double AvgRating { get; set; }
 	public int ReviewsCount { get; set; }
+	public double? SimilarityScore { get; set; }
 	public decimal? BeerIbu { get; set; }
 	public decimal? BeerSrm { get; set; }
 	public string? BeerColor { get; set; }
