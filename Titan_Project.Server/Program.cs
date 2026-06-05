@@ -295,6 +295,7 @@ if (app.Environment.IsDevelopment())
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<AppDBContext>();
+        /*
         var productsWithoutImages = await db.AlcoholProducts
             .Where(p => p.ImageUrl == null && p.ImageLocalPath == null)
             .ToListAsync();
@@ -346,6 +347,7 @@ if (app.Environment.IsDevelopment())
             await db.SaveChangesAsync();
             Console.WriteLine($"✅ Photos successfully downloaded for {productsWithoutImages.Count} products!");
         }
+        */
     }
 }
 
