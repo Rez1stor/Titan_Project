@@ -110,6 +110,7 @@ export default function UserProfile() {
     window.localStorage.setItem(getAvatarStorageKey(user.userId), JSON.stringify(avatarDraftChoice));
     setAvatarChoice(avatarDraftChoice);
     setAvatarDraftChoice(null);
+    window.dispatchEvent(new CustomEvent('titan-avatar-changed'));
   };
 
   const handleEmojiSelect = (emoji: string) => {
@@ -244,7 +245,7 @@ export default function UserProfile() {
           )}
         </div>
 
-        {isOwnProfile && preferences && (preferences.targetAbv || preferences.preferredTags?.length) && (
+        {isOwnProfile && preferences && (preferences.maxPrice || preferences.preferredTags?.length) && (
           <div className="mt-8 pt-6 border-t border-[#EFE2D0]">
             <div className="flex justify-between items-center mb-4">
               <h2 className="m-0 text-[1.4rem] font-bold text-text-main">My Preferences</h2>
@@ -273,11 +274,7 @@ export default function UserProfile() {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              {preferences.targetAbv && (
-                <span className="px-3 py-1 bg-white border border-[#EBDCC8] rounded-full text-sm font-bold text-brand-color">
-                  Strength: ~{preferences.targetAbv}%
-                </span>
-              )}
+
               {preferences.maxPrice && (
                 <span className="px-3 py-1 bg-white border border-[#EBDCC8] rounded-full text-sm font-bold text-brand-color">
                   Max Price: {preferences.maxPrice} PLN
@@ -291,7 +288,7 @@ export default function UserProfile() {
             </div>
           </div>
         )}
-        {!preferences?.targetAbv && isOwnProfile && (
+        {isOwnProfile && (!preferences || (!preferences.maxPrice && !preferences.preferredTags?.length)) && (
           <div className="mt-8 pt-6 border-t border-[#EFE2D0]">
             <div className="flex justify-between items-center">
               <h2 className="m-0 text-[1.4rem] font-bold text-text-main">My Preferences</h2>
@@ -351,8 +348,8 @@ export default function UserProfile() {
             if (profile.priceBands.includes('Any')) maxPrice = null;
 
             const prefs: UserPreferences = {
-              targetAbv: profile.strength,
-              abvTolerance: 3.5,
+              targetAbv: null,
+              abvTolerance: null,
               maxPrice,
               preferredTags: tags
             };

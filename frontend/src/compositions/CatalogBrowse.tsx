@@ -43,6 +43,7 @@ export default function CatalogBrowse() {
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [allProducts, setAllProducts] = useState<ProductDto[]>([]);
   const pageSize = 20;
 
   const selectedCategory = normalizeCatalogCategory(searchParams.get('type'));
@@ -62,6 +63,12 @@ export default function CatalogBrowse() {
     wineSweetness,
     wineAroma,
   ]);
+
+  useEffect(() => {
+    void apiFetch<unknown>(apiRoutes.products.list('page=1&pageSize=1000'), { credentials: 'omit' })
+      .then((data) => setAllProducts(parseProductList<ProductDto>(data).items))
+      .catch(() => setAllProducts([]));
+  }, []);
 
   useEffect(() => {
     const loadCatalog = async () => {
@@ -131,7 +138,11 @@ export default function CatalogBrowse() {
   ]);
 
   const categoryAveragePrice = useMemo(() => {
-    const prices = products
+    const relevantProducts = selectedCategory === 'All'
+      ? allProducts
+      : allProducts.filter((product) => (product.categoryName ?? '').toLowerCase() === selectedCategory.toLowerCase());
+
+    const prices = relevantProducts
       .map((product) => Number(product.basePrice ?? 0))
       .filter((price) => Number.isFinite(price) && price > 0);
 
@@ -140,15 +151,15 @@ export default function CatalogBrowse() {
     }
 
     return prices.reduce((total, price) => total + price, 0) / prices.length;
-  }, [products]);
+  }, [allProducts, selectedCategory]);
 
   const averagesByCategory = useMemo(() => {
     const cats: CatalogCategory[] = ['All', 'Beer', 'Wine', 'Other'];
     const map: Record<string, number> = {};
     cats.forEach((category) => {
       const scoped = category === 'All'
-        ? products
-        : products.filter((product) => (product.categoryName ?? '').toLowerCase() === category.toLowerCase());
+        ? allProducts
+        : allProducts.filter((product) => (product.categoryName ?? '').toLowerCase() === category.toLowerCase());
       const prices = scoped
         .map((product) => Number(product.basePrice ?? 0))
         .filter((price) => Number.isFinite(price) && price > 0);
@@ -157,7 +168,7 @@ export default function CatalogBrowse() {
         : 0;
     });
     return map;
-  }, [products]);
+  }, [allProducts]);
 
   const priceBandDropdownOptions = useMemo(() => {
     const average = categoryAveragePrice > 0 ? categoryAveragePrice : 0;

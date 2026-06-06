@@ -39,7 +39,7 @@ export default function EditProduct() {
         await uploadProductImage(id, productPayload.name ?? '', imageFile);
       }
 
-      navigate(`/product/${id}`);
+      navigate(`/product/${encodeURIComponent(productPayload.name ?? '')}`);
     } catch (e) {
       console.error(e);
       alert('Failed to save product. See console for details.');

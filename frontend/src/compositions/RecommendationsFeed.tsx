@@ -26,16 +26,13 @@ const normalize = (value?: string | null) => (value ?? '').trim().toLowerCase();
 const isInPreferenceWindow = (product: ProductDto, preferences?: UserPreferences | null) => {
   if (!preferences) return false;
 
-  const abv = Number(product.strengthAbv ?? 0);
-  const targetAbv = preferences.targetAbv;
-  const abvTolerance = preferences.abvTolerance;
-  const maxPrice = preferences.maxPrice;
+  const hasAnyPreference =
+    (preferences.maxPrice !== null && preferences.maxPrice !== undefined) ||
+    (preferences.preferredTags && preferences.preferredTags.length > 0);
 
-  if (targetAbv !== null && targetAbv !== undefined && abvTolerance !== null && abvTolerance !== undefined) {
-    if (Math.abs(abv - Number(targetAbv)) > Number(abvTolerance)) return false;
-  }
+  if (!hasAnyPreference) return false;
 
-  if (maxPrice !== null && maxPrice !== undefined && Number(product.basePrice ?? 0) > Number(maxPrice)) {
+  if (preferences.maxPrice !== null && preferences.maxPrice !== undefined && Number(product.basePrice ?? 0) > Number(preferences.maxPrice)) {
     return false;
   }
 

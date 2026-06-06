@@ -57,8 +57,8 @@ export default function AuthRegister() {
         if (profileToSave.priceBands.includes('Any')) maxPrice = null;
 
         preferences = {
-          TargetAbv: profileToSave.strength,
-          AbvTolerance: 3.5,
+          TargetAbv: null,
+          AbvTolerance: null,
           MaxPrice: maxPrice,
           PreferredTags: tags
         };

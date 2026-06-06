@@ -257,8 +257,7 @@ export function matchesTaste(product: ProductLike, profile: AlcoholProfile) {
   return (
     detailMatch &&
     Math.abs(metrics.color - profile.color) <= 30 &&
-    Math.abs(metrics.bitterness - profile.bitterness) <= 32 &&
-    Math.abs(metrics.strength - profile.strength) <= 3.5
+    Math.abs(metrics.bitterness - profile.bitterness) <= 32
   );
 }
 
@@ -273,8 +272,7 @@ export function scoreProduct(product: ProductLike, profile: AlcoholProfile) {
     priceScore +
     detailBonus -
     Math.abs(metrics.color - profile.color) -
-    Math.abs(metrics.bitterness - profile.bitterness) -
-    Math.abs(metrics.strength - profile.strength) * 4
+    Math.abs(metrics.bitterness - profile.bitterness)
   );
 }
 

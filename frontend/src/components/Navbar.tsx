@@ -3,11 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import type { AuthUserDto } from '../types';
 import { isAdminRole } from '../types';
 import { AUTH_CHANGED_EVENT, apiRoutes } from '../api/routes';
-import { pickAvatar } from '../utils/avatar';
+import { pickAvatar, getAvatarStorageKey, type AvatarChoice } from '../utils/avatar';
 import { apiFetch } from '../utils/api';
 
 export default function Navbar() {
   const [user, setUser] = useState<AuthUserDto | null>(null);
+  const [avatarObj, setAvatarObj] = useState<AvatarChoice | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -38,7 +39,43 @@ export default function Navbar() {
     };
   }, []);
 
-  const avatar = useMemo(() => pickAvatar(user?.username ?? 'guest'), [user?.username]);
+  useEffect(() => {
+    const loadAvatar = () => {
+      if (!user?.userId) {
+        setAvatarObj(null);
+        return;
+      }
+      try {
+        const raw = window.localStorage.getItem(getAvatarStorageKey(user.userId));
+        if (raw) {
+          const parsed = JSON.parse(raw) as AvatarChoice;
+          if (parsed.type === 'emoji' || parsed.type === 'image') {
+            setAvatarObj(parsed);
+          } else {
+            setAvatarObj(null);
+          }
+        } else {
+          setAvatarObj(null);
+        }
+      } catch {
+        setAvatarObj(null);
+      }
+    };
+
+    loadAvatar();
+
+    const onAvatarChanged = () => loadAvatar();
+    window.addEventListener('titan-avatar-changed', onAvatarChanged);
+    window.addEventListener('storage', onAvatarChanged);
+
+    return () => {
+      window.removeEventListener('titan-avatar-changed', onAvatarChanged);
+      window.removeEventListener('storage', onAvatarChanged);
+    };
+  }, [user?.userId]);
+
+  const defaultAvatar = useMemo(() => pickAvatar(user?.username ?? 'guest'), [user?.username]);
+  const avatarValue = avatarObj ? avatarObj.value : defaultAvatar;
 
   const navigate = useNavigate();
 
@@ -83,8 +120,12 @@ export default function Navbar() {
 
         {user ? (
           <Link to="/profile" className="ml-2.5 bg-brand-color text-white pl-2.5 pr-3.5 py-2 rounded-full font-bold text-sm shadow-[0_4px_12px_rgba(93,64,55,0.15)] inline-flex items-center gap-2.5 hover:bg-brand-hover transition-colors">
-            <span className="w-[30px] h-[30px] rounded-full bg-white/16 grid place-items-center text-base" aria-hidden="true">
-              {avatar}
+            <span className="w-[30px] h-[30px] rounded-full bg-white/16 grid place-items-center text-base overflow-hidden" aria-hidden="true">
+              {avatarObj?.type === 'image' ? (
+                <img src={avatarValue} alt={user.username} className="w-full h-full object-cover block" />
+              ) : (
+                <span>{avatarValue}</span>
+              )}
             </span>
             My Profile
           </Link>

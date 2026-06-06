@@ -32,7 +32,7 @@ export default function CreateProduct() {
         await uploadProductImage(createdId, productPayload.name ?? '', imageFile);
       }
 
-      navigate(`/product/${createdId}`);
+      navigate(`/product/${encodeURIComponent(productPayload.name ?? '')}`);
     } catch (e) {
       console.error(e);
       alert('Failed to create product. See console for details.');

@@ -95,6 +95,11 @@ export default function ProductDetailsView() {
           setIsFav(favs.some((favorite) => String(favorite.id) === String(productId))),
         ),
       );
+    }).catch((e) => {
+      console.error('Failed to load product details', e);
+      // We set beer to a dummy object or handle error state differently, but currently it just checks for !beer.
+      // Let's at least navigate away or show an error. We can't set beer to null if it's already null, it would still say loading.
+      // We will need a specific error state.
     });
   }, [routeName]);
 

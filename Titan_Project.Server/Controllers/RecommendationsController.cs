@@ -99,26 +99,6 @@ public class RecommendationsController(AppDBContext db, ICurrentUserContext curr
                 }
             }
 
-        var prefsUser = user;
-        if (prefsUser != null)
-        {
-            var candidates = db.AlcoholProducts.AsQueryable();
-            if (prefsUser.TargetAbv.HasValue && prefsUser.AbvTolerance.HasValue)
-            {
-                var target = prefsUser.TargetAbv.Value;
-                var tol = prefsUser.AbvTolerance.Value;
-                candidates = candidates.Where(p => Math.Abs(p.Abv - target) <= tol);
-            }
-
-            if (prefsUser.MaxPrice.HasValue)
-            {
-                candidates = candidates.Where(p => p.Price <= prefsUser.MaxPrice.Value);
-            }
-
-            var recs = await candidates.Where(p => !favList.Contains(p.ProductId)).Take(10).ToListAsync();
-            if (recs.Count > 0) return Ok(await productQuery.MapProductsAsync(recs, CancellationToken.None));
-        }
-
         return Ok(Array.Empty<ProductDto>());
     }
 
